@@ -117,6 +117,8 @@ composer:
 # 3) 상태줄
 statusLine:
   preset: custom
+  # effort 레벨을 모델명 아이콘으로 접지 않고 ` · <레벨>` 문자열로 남긴다 (§3-5)
+  compactThinkingLevel: false
   leftSegments: [pi, vim, model, mode, collab, stream, path, git, pr, context_pct, cache_hit, cost, status]
   rightSegments: [session_name]
   separator: powerline-thin
@@ -146,6 +148,7 @@ computer:
 
 - `preset: custom`은 `segmentOptions`가 **빈 맵에서 시작**한다. 위 블록을 생략하면 경로 축약·깃 플래그·thinking 아이콘이 사라진다.
 - `composer.shape: claude`는 배치를 정한다: `rightSegments`는 입력창 **위** 꼬리줄, `leftSegments`는 **하단 행**에 그려진다. 그래서 캐시 히트율·플러그인 값이 하단 한 줄에 모인다(`rightSegments`로 옮기면 입력창 위로 올라간다). 기본값은 `band`.
+- `statusLine.compactThinkingLevel: false`는 effort 레벨을 **모델명 아이콘으로 접지 않고** ` · <레벨>` 문자열로 남긴다. 기본값 `true`에서는 레벨 표시가 모델명 앞 아이콘 하나(`◒ DeepSeek…`)로 접히고 문자열은 사라진다. 레벨 문자열 자체는 심볼 값(`thinking.*`)이라 기호를 떼려면 §3-5의 오버라이드가 함께 필요하다.
 - `spelling.autocomplete: off`는 **입력창 단어 자동완성(고스트 힌트)만** 끈 값이다. 같은 `interaction → Input` 그룹의 자동완성 항목은 서로 독립이라 따로 지정해야 한다:
 
   | 설정 키 | 설정 UI 라벨 | 이 PC 값 | 끄는 값 |
@@ -203,7 +206,10 @@ curl.exe -sL -o "$themeDir\titanium-custom.json" `
   },
   "symbols": {
     "overrides": {
-      "icon.cache": "🎯"
+      "icon.cache": "🎯",
+      "thinking.medium": "medium",
+      "thinking.high": "high",
+      "thinking.xhigh": "xhigh"
     }
   }
 }
@@ -237,6 +243,25 @@ theme:
 | `icon.session` | 🆔 | `icon.warning` | ⚠ |
 
 그 외: `icon.cacheMiss`, `icon.subscription`, `icon.advisor(Closed)`, `icon.ghost`, `icon.package`, `icon.rewind`, `icon.intelligence`, `icon.fast`, `icon.mic`, `icon.camera`, `icon.vim*`, `icon.extension*`(Skill/Tool/SlashCommand/Mcp/Rule/Hook/Prompt/ContextFile/Instruction).
+
+- 모델명 앞 아이콘은 `icon.model`(unicode `⬢`, nerd `\uec19`, ascii `[M]`)이다. 이 PC는 `""`로 두어 상태줄이 `π · DeepSeek V4.1 Flash · high`로 시작한다(검증: `omp gallery --segment model --plain` → `Sonnet 4.5 · high`). 빈 값일 때 공백은 남지 않는다. 같은 심볼을 쓰는 표면도 함께 비워진다: model-hub(`/models`) 행, agents-hub, 모델 멘션 자동완성 드롭다운(`model-mention-autocomplete`), composer의 모델 첨부 칩(`composer-attachments`), `/setup` 테마 미리보기.
+- `compactThinkingLevel: true`에서는 이 자리가 thinking 글리프로 대체된다 — 그 조합에서는 `icon.model` 값이 상태줄에 쓰이지 않는다.
+
+### effort 레벨을 문자열로 (§3-5)
+
+- 레벨 표시 문자열은 심볼 값이다(키 네임스페이스 `thinking.*`). unicode 프리셋 기본값은 **글리프가 문자열에 붙은 형태**다: `thinking.minimal`=`○ min`, `thinking.low`=`◔ low`, `thinking.medium`=`◑ med`, `thinking.high`=`◒ high`, `thinking.xhigh`=`◕ xhigh`, `thinking.max`=`◉ max`, `thinking.autoPending`=`⟳`(auto 미해결 시 `⟳ auto`). nerd/ascii 프리셋도 같은 구조(`[med]` 등)다.
+- 그래서 "기호 대신 문자열"은 설정 키 하나로는 안 되고 두 조각이 필요하다:
+
+  | 조각 | 값 | 역할 |
+  |---|---|---|
+  | `statusLine.compactThinkingLevel` (§2) | `false` | 레벨 표시를 모델명 아이콘으로 접지 않고 ` · <문자열>` 꼬리로 유지 |
+  | `symbols.overrides` `thinking.*` | `"medium"`, `"high"`, `"xhigh"` … | 문자열에서 글리프를 떼고 단어만 남김 |
+
+- 6단계 전부 덮으려면 `minimal`/`low`/`medium`/`high`/`xhigh`/`max` 키를 각각 넣는다(위 3-3 예시는 축약판).
+- `auto` 미해결 표기는 `thinking.autoPending` 하나뿐이지만 **글리프를 떼지 않는다(이 PC는 기본값 `⟳` 유지).** 표기가 `${theme.thinking.autoPending} auto`로 하드코딩돼 있어 값을 `""`로 비워도 앞 공백이 남아 `·  auto`(이중 공백)가 된다. 검증: `omp --thinking auto --no-session` → `⬢ DeepSeek V4.1 Flash · ⟳ auto`. auto가 턴에서 레벨로 해결되면 단어만 남는다.
+- **`off`의 `⦸`는 지울 수 없다(이 PC는 유지).** off 전용 심볼이 없고 표기가 `${theme.status.disabled} off`로 하드코딩돼 있어, 글리프를 떼려면 `status.disabled`를 비워야 한다. 그런데 같은 심볼이 agents-hub·확장 관리·model-browser·plugin-settings의 비활성 표식에 공유돼 있어 그 표식들이 함께 빈칸이 된다. 검증: `omp --thinking off --no-session` → `⬢ DeepSeek V4.1 Flash · ⦸ off`.
+- 검증: `omp gallery --segment model --plain` → `⬢ Sonnet 4.5 · high`(기본값은 `· ◒ high`). 실제 TUI에서도 모델명 옆에 ` · high`가 뜨고, `⇧⇥`로 레벨을 바꾸면 `max` 등 문자열이 그대로 따라온다.
+- 오버라이드는 테마 전역이다. `theme.thinking[*]`를 읽는 곳도 같이 단어로 바뀐다 — 실측 사용처: 모델 세그먼트 render 경로(`segments.ts` `modelThinkingDisplay`), 푸터의 auto 미해결 표기, 에이전트 허브 행(`agent-hub-renderer.ts`). 반대로 단어를 따로 계산하는 경로(`segments.ts` `describe()`·`thinkingLevelWord()`, `interactive-mode`)는 심볼과 무관하다.
 
 ---
 
@@ -416,4 +441,5 @@ omp        # 하단 상태줄: 한 줄 + 🎯, Eval에서 프렐류드 스모크
 - 실제 컴퓨터 제어 검증: 계산기 창의 화면 캡처·접근성 트리 읽기에 성공했고, 접근성 버튼으로 `123 + 456 = 579`, 네이티브 키보드 입력으로 `7 × 8 = 56`을 계산해 화면·접근성 값으로 확인했다. macOS에서 `press('*')`는 키코드로 지원되지 않으므로 `press('shift+8')`을 사용했다.
 - 실제 브라우저 제어 검증: 관리형 Chromium에서 `example.com` 제목·페이지를 읽고, 독립 테스트 페이지에 `맥OS 브라우저 제어 정상`을 입력한 뒤 확인 버튼을 클릭해 `확인: 맥OS 브라우저 제어 정상` 표시와 화면 캡처를 확인했다. 테스트 탭은 닫았으며 기존 문서·로그인된 브라우저 탭은 변경하지 않았다.
 - 테마·상태줄과 새 플러그인을 현재 대화에도 확실히 반영하려면 omp를 종료 후 다시 실행한다. 전역 규칙은 새 세션 또는 `/new`·`/clear`에서 다시 읽는다.
+- effort 레벨은 기호 대신 단어로 표시하고(§3-5), 모델명 앞 아이콘(`icon.model` `⬢`)도 제거했다: `statusLine.compactThinkingLevel: false` + 테마 `symbols.overrides`(`icon.cache`, `icon.model: ""`, `thinking.minimal/low/medium/high/xhigh/max`). 상태줄은 `π · DeepSeek V4.1 Flash · high · …`로 시작한다. `off`의 `⦸`와 `auto` 미해결의 `⟳`는 남긴다 — 둘 다 표기 문자열이 코드에 하드코딩돼 있어(각각 `status.disabled` 공유, 글리프 뒤 공백 고정) 상태줄만 떼어낼 수 없다.
 
