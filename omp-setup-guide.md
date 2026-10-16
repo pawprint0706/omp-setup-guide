@@ -400,3 +400,20 @@ omp        # 하단 상태줄: 한 줄 + 🎯, Eval에서 프렐류드 스모크
 ```
 
 검증: 규칙이 실려 있는지 보려면 아무 세션에서나 첫 요청의 시스템 프롬프트에 본문이 포함돼야 하고, `RULES.md`를 비우면(또는 삭제하면) 다음 `/new`부터 사라진다.
+
+---
+
+## 8. macOS 적용 기록 (2026-10-17)
+
+- Apple Silicon macOS의 **omp 18.11.2**에서 §2 설정, 플러그인 2종, §7 전역 규칙을 적용했다. 기존 모델·인증·설치 설정은 유지했다.
+- 이미 omp가 설치되어 있으면 재설치는 필요 없다. 신규 설치는 공식 macOS 셸 설치 스크립트 `https://omp.sh/install.sh`를 검토한 뒤 실행한다. PowerShell 명령과 Windows 네이티브 애드온 경로는 사용하지 않는다.
+- 설정 경로는 동일하게 `~/.omp/agent/config.yml`, `~/.omp/agent/themes/titanium-custom.json`, `~/.omp/agent/RULES.md`다. 테마는 설치 버전과 일치하는 `v18.11.2`의 titanium JSON을 복사하고 §3의 이름·아이콘 변경만 적용했다.
+- `omp plugin list`에서 두 플러그인의 활성 상태를 확인했다. 실제 TUI 하단 한 줄에서 OpenCode Go 사용률과 `OR $4.87`이 ` · `로 연결됨을 확인했다(잔액·사용률은 조회 시점 값).
+- `omp gallery --segment cache_hit --plain --width 200`에서 `🎯 77.92%`, `status` 갤러리에서 `Indexer ready · Tests passing`을 확인했다. 새 TUI에서 캐시 읽기가 없으면 🎯가 숨겨지는 동작은 동일하다.
+- Eval의 `browser.open` → 제목·페이지 관찰 → `close`가 정상 동작했다. 관리형 Chrome for Testing의 macOS ARM 바이너리가 준비됐고 `omp ps`에서 `omp.browser.headless`가 `ready`였다.
+- 데스크톱 제어 권한: **시스템 설정 → 개인정보 보호 및 보안 → 기기 제어 및 데이터 접근**에서 omp를 실행하는 터미널 앱의 권한을 활성화하고, **터미널을 종료한 뒤 다시 실행한다**. 이 macOS 환경에서 실제 확인한 메뉴명이며, 기존 안내의 `손쉬운 사용`을 대신한다.
+- 권한 적용 후 Eval에서 `await computer.capabilities()`로 확인한다. 이 환경에서는 터미널 재시작 후 `backend: quartz`, `capturePermission: granted`, `inputPermission: granted`, `axPermission: granted`와 `capture: true`, `input: true`, `ax: true`를 확인했다. 백그라운드 창 입력과 메뉴 제어도 지원 활성 상태다.
+- 실제 컴퓨터 제어 검증: 계산기 창의 화면 캡처·접근성 트리 읽기에 성공했고, 접근성 버튼으로 `123 + 456 = 579`, 네이티브 키보드 입력으로 `7 × 8 = 56`을 계산해 화면·접근성 값으로 확인했다. macOS에서 `press('*')`는 키코드로 지원되지 않으므로 `press('shift+8')`을 사용했다.
+- 실제 브라우저 제어 검증: 관리형 Chromium에서 `example.com` 제목·페이지를 읽고, 독립 테스트 페이지에 `맥OS 브라우저 제어 정상`을 입력한 뒤 확인 버튼을 클릭해 `확인: 맥OS 브라우저 제어 정상` 표시와 화면 캡처를 확인했다. 테스트 탭은 닫았으며 기존 문서·로그인된 브라우저 탭은 변경하지 않았다.
+- 테마·상태줄과 새 플러그인을 현재 대화에도 확실히 반영하려면 omp를 종료 후 다시 실행한다. 전역 규칙은 새 세션 또는 `/new`·`/clear`에서 다시 읽는다.
+
