@@ -1,15 +1,19 @@
-# omp 셋업 가이드 (Windows)
+# omp 셋업 가이드 (Windows · macOS)
 
-이 PC의 omp 상태를 재설치 후 그대로 복구하기 위한 기록.
-기준: **omp 18.11.0**(검증 시점 설치본 18.11.1), Windows 10 x64, Git Bash, 프로바이더 `opencode-go` + `openrouter`, 상태줄 플러그인 2종 + 커스텀 테마 1개, 전역 규칙 `RULES.md`, Eval 프렐류드 `computer`·`browser` 활성, 입력 단어 자동완성 off.
-작성: 2026-10-15, 갱신: 2026-10-16 (실제 설정 파일·설치된 바이너리에서 확인한 값).
+기본 프로필의 설정을 재설치 후 복구하기 위한 가이드. §1–7은 공통 설정과 OS별 절차, §8은 macOS 적용·검증 기록이다.
+
+- **현재 복구 기준:** macOS Apple Silicon, omp **18.11.2**. 한 줄 상태줄, 🎯 캐시 아이콘, effort 문자열 표시, 모델 아이콘 제거, 플러그인 2종, 전역 규칙, Eval 프렐류드, 입력 단어 자동완성 off.
+- **Windows 과거 검증:** Windows 10 x64, Git Bash, omp 18.11.0 기준(검증 설치본 18.11.1), `opencode-go` + `openrouter`. 이후 추가한 effort·모델 아이콘 설정은 macOS 18.11.2에서 확인했으며 Windows에서는 재검증하지 않았다.
+- 모델·프로바이더·인증은 기존 값을 유지한다. 아래 DeepSeek 모델명과 사용량·잔액은 표시 예시이며 고정 설정값이 아니다.
+
+작성: 2026-10-15, 갱신: 2026-10-17.
 
 ## 0. 목표 상태
 
-하단 상태줄이 **한 줄**이고, 캐시 히트율은 🎯, 플러그인 값은 ` · `로 이어져 끝에 붙는다:
+하단 상태줄이 **한 줄**이고, 모델 아이콘 없이 모델명 뒤에 effort 단어가 표시된다. 캐시 히트율은 🎯, 플러그인 값은 ` · `로 이어져 끝에 붙는다. 최종 설정의 표시 예시:
 
 ```
-π · ◒ DeepSeek V4.1 Flash · 📁 C:\Projects · ◫ 0.9%/1M ⟲ · 🎯 49.17% · $0.00 · 5h 2% | Wk 0% | Mo 0% · OR $4.89
+π · DeepSeek V4.1 Flash · high · 📁 omp-setup-guide · ◫ 0.9%/1M ⟲ · 🎯 49.17% · $0.00 · 5h 2% | Wk 0% | Mo 0% · OR $4.89
 ```
 
 | 조각 | 출처 |
@@ -25,10 +29,25 @@
 
 ### 1) omp 바이너리
 
+설치되어 있으면 먼저 `omp --version`을 확인한다. 아래 설치기는 최신 배포본을 설치하므로 특정 버전을 보장하지 않는다.
+
+**Windows — PowerShell**
+
 ```powershell
 irm https://omp.sh/install.ps1 | iex        # 설치 위치: %LOCALAPPDATA%\omp\omp.exe
-omp --version                               # omp/18.11.0
+omp --version                               # 실제 설치 버전 확인
 ```
+
+**macOS — 터미널의 zsh/bash**
+
+```sh
+curl -fsSL https://omp.sh/install.sh -o /tmp/omp-install.sh
+less /tmp/omp-install.sh        # 설치 스크립트를 검토한 뒤 종료(q)
+bash /tmp/omp-install.sh
+omp --version
+```
+
+macOS 신규 설치 명령은 이 환경에서 재실행하지 않았다. 기존 설치본 18.11.2로 설정·렌더링·제어 동작을 검증했다.
 
 - 설치 스크립트는 `https://raw.githubusercontent.com/can1357/oh-my-pi/main/scripts/install.sh|.ps1`로 302되고, 바이너리는 `PI_BUILD_URL`(기본 `https://build.stencil.so`)에서 sha256 검증 후 받는다.
 - 업데이트는 `omp update` (`--canary` / `--stable`).
@@ -41,22 +60,38 @@ omp login opencode-go
 omp login openrouter
 ```
 
-또는 TUI에서 `/login <provider>`. 기존 PC에서 옮길 때:
+또는 TUI에서 `/login <provider>`. 기존 PC에서 옮길 때는 **기존 PC에서 export**, **새 PC에서 import**한다. 다음 중 해당 OS의 내보내기 명령 하나만 사용한다.
 
-```powershell
-omp auth export > credentials.json     # 기존 PC
-omp auth import credentials.json       # 새 PC
+```sh
+# macOS / Git Bash — 개인 디렉터리에서 실행
+(umask 077; omp auth export > credentials.json)
 ```
 
-> `credentials.json`에는 평문 키가 들어 있다. 커밋 금지, 백업도 암호화된 곳에.
+```powershell
+# Windows PowerShell — UTF-16LE 리다이렉션을 피하고 UTF-8(BOM 없음)으로 저장
+# 이 변환 예제는 macOS 검수에서 실행하지 않았다.
+$credentials = omp auth export
+if ($LASTEXITCODE -ne 0) { throw "omp auth export 실패" }
+$utf8 = New-Object System.Text.UTF8Encoding($false)
+[System.IO.File]::WriteAllText((Join-Path $PWD.Path "credentials.json"), ($credentials -join "`n"), $utf8)
+Remove-Variable credentials
+```
+
+새 PC에서:
+
+```sh
+omp auth import credentials.json
+```
+
+> `credentials.json`에는 평문 API 키·OAuth 토큰이 들어 있다. 저장소 밖의 개인 디렉터리에서 다루고, 커밋·채팅 첨부 금지, 백업은 암호화된 곳에 보관한다. 이전 완료 후 임시 파일은 안전하게 정리한다. OAuth 토큰은 갱신 시 회전할 수 있어 복사한 두 PC가 같은 로그인을 공유하면 한쪽이 로그아웃될 수 있다. 여러 PC를 계속 사용할 경우 각 PC에서 별도로 로그인하는 편이 안전하다.
 
 ### 3) `~/.omp/agent/config.yml`
 
-§2의 키만 병합한다. omp 사용자 설정 파일은 이 하나뿐이다(프로필 디렉터리 없음, 프로젝트 `.omp/config.yml` 없음, `agent/settings.json.bak`은 과거 마이그레이션 백업). 나머지 키는 설치 환경이 채운 값을 그대로 둔다.
+§2의 키만 병합한다. 이 가이드는 **기본 프로필**의 `~/.omp/agent/config.yml`을 기준으로 한다. 이름 있는 프로필은 `~/.omp/profiles/<profile>/agent/config.yml`을 사용하므로 해당 프로필에 적용하고, 실행·검증도 같은 프로필에서 한다. 특정 PC에 프로필 디렉터리가 없었다는 사실은 프로필 기능이 없다는 뜻이 아니다. 나머지 모델·머신별 설정은 기존 값을 유지한다.
 
 ### 4) 커스텀 테마 `~/.omp/agent/themes/titanium-custom.json`
 
-🎯 아이콘 오버라이드용. 절차와 함정은 §3. 이미 맞춰둔 PC가 있으면 그 파일을 그대로 복사하는 게 제일 빠르다.
+🎯 캐시 아이콘·effort 문자열·모델 아이콘 제거용. §3에서 OS에 맞게 내장 테마를 복사하고 **전체 오버라이드 블록**을 병합한다. 이미 맞춰둔 PC가 있으면 완성된 테마 파일을 복사해도 된다.
 
 ### 5) 플러그인 2종
 
@@ -68,12 +103,12 @@ omp plugin list                      # ● 로 enabled 2개 확인
 
 - 로컬 클론이 있으면 `omp plugin install <경로>` (junction/symlink로 걸림).
 - 플러그인이 같이 배포하는 `statusline.yml`은 **참고용 블록이며 omp가 자동 병합하지 않는다** — §2의 `statusLine` 블록이 그 역할을 한다.
-- 이 PC에 실제 설치된 커밋(참고): `omp-opencode-go-usage#fda9a4e`, `omp-openrouter-credits#a302954`. 재설치는 브랜치 최신을 받으므로 버전이 달라질 수 있다.
+- Windows 과거 설치 커밋(참고): `omp-opencode-go-usage#fda9a4e`, `omp-openrouter-credits#a302954`. 재설치는 브랜치 최신을 받으므로 이 커밋과 같다고 보장하지 않는다.
 - 플러그인 자체 설명서: `~/.omp/plugins/node_modules/<name>/README.md`.
 
 ### 6) Eval 프렐류드 (computer-use / browser-use)
 
-별도 설치물이 없다 — 데스크톱 백엔드는 네이티브 애드온(`~/.omp/natives/<version>/pi_natives.win32-x64-baseline.node`)으로 바이너리에 포함되고, managed Chromium은 첫 사용 시 자동으로 준비된다. 켜는 일은 설정 한 줄이다.
+데스크톱 백엔드는 플랫폼별 네이티브 애드온으로 제공되고, 관리형 Chromium은 필요 시 첫 사용 때 준비된다. Windows 애드온 경로 예시는 `~/.omp/natives/<version>/pi_natives.win32-x64-baseline.node`이며 macOS에 이 파일을 복사하지 않는다. `computer.enabled`는 프렐류드 스위치일 뿐, OS 권한이나 사용자 동의를 대신하지 않는다(§4).
 
 - `browser`는 기본 on(`browser.enabled: true`)이라 아무것도 하지 않는다.
 - `computer`는 기본 off이므로 §2의 `computer.enabled: true`를 넣는다(§4).
@@ -81,10 +116,13 @@ omp plugin list                      # ● 로 enabled 2개 확인
 
 ### 7) 검증
 
+아래 omp 명령은 Windows·macOS 공통이다. 기본 프로필이 아니라면 해당 프로필을 선택한 환경에서 실행한다.
+
 ```powershell
 omp config get statusLine.preset          # custom
 omp config get statusLine.leftSegments    # [..."context_pct","cache_hit","cost","status"]
 omp config get statusLine.showHookStatus  # false
+omp config get statusLine.compactThinkingLevel # false
 omp config get theme.dark                 # titanium-custom
 omp config get spelling.autocomplete      # off
 omp config get computer.enabled           # true
@@ -93,11 +131,13 @@ omp plugin list                           # ● 2개
 
 omp gallery --segment status --plain --width 200      # 훅 상태가 ' · '로 이어진 형태
 omp gallery --segment cache_hit --plain --width 200   # 🎯 77.92%  ← 아이콘 오버라이드 확인
-omp ps                                                # omp.browser.headless  ready (browser 프렐류드 데몬)
-omp                                                   # 실제 TUI: 하단이 한 줄 + 🎯 표시
+omp gallery --segment model --plain --width 200       # Sonnet 4.5 · high (⬢ 없음)
+omp                                                   # 실제 TUI 확인 후 §4 Eval 스모크 실행
 ```
 
 `omp gallery`는 자격증명 없이 세그먼트 렌더만 결정적으로 확인하는 도구다(`status`는 `Indexer ready · Tests passing`처럼 이어 붙여, `cache_hit`은 현재 테마의 아이콘으로 그린다). 두 프렐류드가 실제로 동작하는지는 Eval에서 확인한다 — §4.
+
+`omp ps`는 §4의 `browser.open()` 이후에 확인한다. 첫 사용 전에는 브라우저 데몬이 없어도 정상이다. 🎯는 실제 캐시 읽기가 있을 때만 표시되므로 첫 TUI 화면에 없다고 실패로 판단하지 않는다.
 
 ---
 
@@ -106,7 +146,7 @@ omp                                                   # 실제 TUI: 하단이 �
 아래 키만 넣는다(파일이 없으면 생성, 있으면 해당 키만 병합). `shellPath`, `modelRoles`, `symbolPreset`, `setupVersion` 같은 값은 머신·모델·설치 시점에 따라 달라지므로 여기서 고정하지 않는다 — 셋업 마법사와 `/models`가 채운 값을 그대로 둔다.
 
 ```yaml
-# 1) 커스텀 테마 (§3의 🎯 아이콘 오버라이드)
+# 1) 커스텀 테마 (§3의 전체 심볼 오버라이드)
 theme:
   dark: titanium-custom
 
@@ -130,7 +170,7 @@ statusLine:
 
 # 4) 입력 단어 자동완성 off
 spelling:
-  autocomplete: off
+  autocomplete: "off"
 
 # 5) 데스크톱 제어 — computer Eval 프렐류드 (기본 false, §4)
 #    browser 프렐류드는 기본 true라 키를 두지 않는다.
@@ -138,7 +178,7 @@ computer:
   enabled: true
 ```
 
-- `leftSegments`는 omp 18.11.0의 내장 `default` 프리셋에 `cache_hit`과 `status`를 덧붙인 것이다. 나머지 프리셋 값:
+- 다음 표는 **Windows 18.11.0 기록의 내장 `default` 프리셋**이다. 현재 공통 복구 설정은 §2 YAML 블록이며, 내장 프리셋의 최신 기본값이라고 가정하지 않는다:
 
   | 항목 | 값 |
   |---|---|
@@ -164,34 +204,51 @@ computer:
 
 ---
 
-## 3. 캐시 히트율(`cache_hit`) + 🎯 아이콘
+## 3. 커스텀 테마 — 캐시·모델 아이콘과 effort 표기
 
 ### `cache_hit` 세그먼트
 
 - `leftSegments`(또는 `rightSegments`)에 `cache_hit`을 넣으면 표시된다. `composer.shape: claude`에서는 `leftSegments`가 하단 행이므로 여기에 둔다.
 - 값 = `cacheRead / (cacheRead + cacheWrite + input) × 100`, 소수 2자리.
-- **`cacheRead`가 0이면 세그먼트 자체가 숨겨진다.** 세션 첫 요청에는 캐시 읽기가 없으므로 2번째 요청부터 나타난다(실측: 첫 턴 이후 `🎯 49.17%` → 다음 턴 `🎯 34.30%`).
+- **`cacheRead`가 0이면 세그먼트 자체가 숨겨진다.** 캐시 읽기가 발생한 요청 이후 표시된다. 두 번째 요청에서도 캐시 읽기가 없으면 계속 숨겨지며, 특정 요청 횟수부터 표시된다고 보장하지 않는다.
 - 아이콘은 심볼 프리셋의 `icon.cache`를 쓴다. `cache_read`, `cache_write` 세그먼트도 같은 `icon.cache`를 공유한다.
 
 | 프리셋 | `icon.cache` 기본값 |
 |---|---|
 | `unicode` (기본값) | 💾 |
-| `nerd` | `` (Nerd Font f1c0) |
+| `nerd` | `U+F1C0` (Nerd Font 필요) |
 | `ascii` | `cache` |
 
-### 이모지 오버라이드 = 커스텀 테마
+### 커스텀 테마 만들기 (§3-1–4)
 
 omp는 세그먼트 아이콘을 **테마의 `symbols.overrides`**로만 덮어쓸 수 있다(설정에는 아이콘 항목이 없다). 커스텀 테마는 `colors` 필수 토큰을 전부 요구하고 테마에 extends/overlay가 없으므로, **내장 테마를 통째로 복사한 뒤 `symbols`만 추가**한다.
 
+**3-1. 설치 버전에 맞는 내장 테마 복사**
+
+`omp --version`이 `omp/18.11.2`이면 태그는 `v18.11.2`다. 다른 버전을 설치했다면 아래 예제의 버전을 실제 출력에 맞춰 바꾼다. 해당 태그의 파일이 없거나 다운로드가 실패하면 임의 버전으로 대체하지 말고 먼저 배포 태그를 확인한다.
+
+Windows PowerShell:
+
 ```powershell
-# 3-1. 내장 테마 복사 (설치된 버전 태그로 고정)
+$version = "18.11.2"   # omp --version 출력에 맞춘다
 $themeDir = "$env:USERPROFILE\.omp\agent\themes"
 New-Item -ItemType Directory -Force -Path $themeDir | Out-Null
-curl.exe -sL -o "$themeDir\titanium-custom.json" `
-  https://raw.githubusercontent.com/can1357/oh-my-pi/v18.11.0/packages/tui/src/theme/defaults/titanium.json
+curl.exe -fL -o "$themeDir\titanium-custom.json" `
+  "https://raw.githubusercontent.com/can1357/oh-my-pi/v$version/packages/tui/src/theme/defaults/titanium.json"
+if ($LASTEXITCODE -ne 0) { throw "테마 다운로드 실패" }
 ```
 
-> `>` 리다이렉션은 쓰지 말 것. Windows PowerShell 5.1은 네이티브 명령 출력을 **UTF-16LE**로 저장해 테마 JSON이 깨진다(실측: `>` = 6292바이트 `FF FE` BOM, `curl.exe -o` = 3045바이트 UTF-8).
+macOS zsh/bash:
+
+```sh
+version="18.11.2"       # omp --version 출력에 맞춘다
+theme_dir="$HOME/.omp/agent/themes"
+mkdir -p "$theme_dir"
+curl -fL -o "$theme_dir/titanium-custom.json" \
+  "https://raw.githubusercontent.com/can1357/oh-my-pi/v$version/packages/tui/src/theme/defaults/titanium.json"
+```
+
+> 두 다운로드 명령 모두 기존 `titanium-custom.json`을 덮어쓴다. 이미 사용자 변경이 있으면 먼저 백업한다. Windows PowerShell 5.1에서는 네이티브 출력에 `>`를 쓰면 UTF-16LE로 저장될 수 있으므로 테마는 `curl.exe -o`로 저장한다. 아래 편집도 UTF-8로 저장한다.
 
 ```diff
 # 3-2. 이름 변경 (파일명과 JSON name을 맞춘다)
@@ -199,17 +256,22 @@ curl.exe -sL -o "$themeDir\titanium-custom.json" `
 +  "name": "titanium-custom",
 ```
 
-```jsonc
-// 3-3. 파일 끝, 마지막 "}" 앞에 symbols 블록 추가 (앞 블록 뒤에 쉼표 필요)
-  "terminal": {
-    ...
-  },
+**3-3. 전체 심볼 오버라이드 병합**
+
+아래 JSON의 `symbols` 속성을 다운로드한 테마의 **최상위 객체에 병합**한다. 테마 파일 전체를 이 블록으로 교체하면 필수 `colors` 등이 사라지므로 안 된다. 기존 `symbols`가 있으면 해당 객체를 갱신하고, 중복 키를 만들지 않는다.
+
+```json
+{
   "symbols": {
     "overrides": {
       "icon.cache": "🎯",
+      "icon.model": "",
+      "thinking.minimal": "minimal",
+      "thinking.low": "low",
       "thinking.medium": "medium",
       "thinking.high": "high",
-      "thinking.xhigh": "xhigh"
+      "thinking.xhigh": "xhigh",
+      "thinking.max": "max"
     }
   }
 }
@@ -225,7 +287,7 @@ theme:
 - 우선순위: 설정 `symbolPreset` > 테마 `symbols.preset` > 기본 `unicode`. `overrides`는 그 위에 적용된다.
 - 검증: `omp gallery --segment cache_hit --plain` → `🎯 77.92%` (기본값 💾가 아니면 오버라이드가 먹은 것).
 - 커스텀 테마가 로드되지 않으면(JSON 오류·필수 토큰 누락) omp는 조용히 `dark`로 폴백한다 → `omp config get theme.dark`와 `~/.omp/logs`를 함께 본다.
-- 복사본은 **스냅샷**이다. omp 업데이트로 내장 테마 색이 바뀌면 복사본은 옛 색으로 남는다. 그때는 최신 내장 테마를 다시 복사하고 `symbols` 블록만 옮긴다. (18.11.0 태그 파일이 이 PC의 내장 titanium과 동일함은 vars/colors/export/terminal 비교로 확인했다.)
+- 복사본은 **스냅샷**이다. omp 업데이트로 내장 테마가 바뀌면 설치 버전에 맞는 파일을 다시 복사한 뒤 이름 변경과 위 전체 `symbols` 블록을 재적용한다. Windows 과거 기록은 v18.11.0, macOS 검증은 v18.11.2의 titanium을 사용했다.
 - 라이트 터미널에서도 같은 방식으로: `theme.light`용 복사본에 같은 `overrides`를 넣는다.
 
 ### 다른 아이콘도 바꾸려면
@@ -257,11 +319,12 @@ theme:
   | `statusLine.compactThinkingLevel` (§2) | `false` | 레벨 표시를 모델명 아이콘으로 접지 않고 ` · <문자열>` 꼬리로 유지 |
   | `symbols.overrides` `thinking.*` | `"medium"`, `"high"`, `"xhigh"` … | 문자열에서 글리프를 떼고 단어만 남김 |
 
-- 6단계 전부 덮으려면 `minimal`/`low`/`medium`/`high`/`xhigh`/`max` 키를 각각 넣는다(위 3-3 예시는 축약판).
-- `auto` 미해결 표기는 `thinking.autoPending` 하나뿐이지만 **글리프를 떼지 않는다(이 PC는 기본값 `⟳` 유지).** 표기가 `${theme.thinking.autoPending} auto`로 하드코딩돼 있어 값을 `""`로 비워도 앞 공백이 남아 `·  auto`(이중 공백)가 된다. 검증: `omp --thinking auto --no-session` → `⬢ DeepSeek V4.1 Flash · ⟳ auto`. auto가 턴에서 레벨로 해결되면 단어만 남는다.
-- **`off`의 `⦸`는 지울 수 없다(이 PC는 유지).** off 전용 심볼이 없고 표기가 `${theme.status.disabled} off`로 하드코딩돼 있어, 글리프를 떼려면 `status.disabled`를 비워야 한다. 그런데 같은 심볼이 agents-hub·확장 관리·model-browser·plugin-settings의 비활성 표식에 공유돼 있어 그 표식들이 함께 빈칸이 된다. 검증: `omp --thinking off --no-session` → `⬢ DeepSeek V4.1 Flash · ⦸ off`.
-- 검증: `omp gallery --segment model --plain` → `⬢ Sonnet 4.5 · high`(기본값은 `· ◒ high`). 실제 TUI에서도 모델명 옆에 ` · high`가 뜨고, `⇧⇥`로 레벨을 바꾸면 `max` 등 문자열이 그대로 따라온다.
-- 오버라이드는 테마 전역이다. `theme.thinking[*]`를 읽는 곳도 같이 단어로 바뀐다 — 실측 사용처: 모델 세그먼트 render 경로(`segments.ts` `modelThinkingDisplay`), 푸터의 auto 미해결 표기, 에이전트 허브 행(`agent-hub-renderer.ts`). 반대로 단어를 따로 계산하는 경로(`segments.ts` `describe()`·`thinkingLevelWord()`, `interactive-mode`)는 심볼과 무관하다.
+- §3-3의 전체 블록은 `minimal`/`low`/`medium`/`high`/`xhigh`/`max`를 모두 단어로 바꾼다. 표시 가능한 effort 목록은 모델에 따라 다르다.
+- **`auto` 미해결 상태의 `⟳`는 유지한다.** omp 18.11.2는 `${theme.thinking.autoPending} auto`로 렌더링하므로 테마 값을 `""`로 비우면 글리프는 사라지지만 `·  auto`처럼 고정 공백이 남는다. 현재 설정·테마만으로 글리프와 이 공백을 함께 없애는 방법은 확인되지 않아 원복했다. 코드 수정까지 불가능하다는 뜻은 아니다. auto가 레벨로 해결되면 해당 레벨 단어가 표시된다.
+- **`off`의 `⦸`는 다른 화면의 표식을 보존하기 위해 유지한다.** off 전용 심볼이 없고 `${theme.status.disabled} off`를 사용한다. `status.disabled`를 비우면 글리프를 제거할 수 있지만 agents-hub·확장 관리·model-browser·plugin-settings의 비활성 표식까지 사라지고 앞 공백도 남는다. 현재 테마 설정으로 상태줄의 off만 독립적으로 제거할 수 없으므로 공유 심볼은 변경하지 않았다.
+- 최종 테마의 갤러리 검증: `omp gallery --segment model --plain` → `Sonnet 4.5 · high`(모델 아이콘·effort 글리프 없음). 실제 TUI에서도 `DeepSeek V4.1 Flash · high`, `max` 등의 단어 표시를 확인했다.
+- DeepSeek를 선택한 최종 설정에서 off·미해결 auto의 모델 세그먼트는 각각 `DeepSeek V4.1 Flash · ⦸ off`, `DeepSeek V4.1 Flash · ⟳ auto` 형태다. 이전 모델 아이콘 제거 전 출력과 혼동하지 않는다.
+- 오버라이드는 테마 전역이다. 소스에서 확인한 사용처는 모델 세그먼트 render 경로와 에이전트 허브 행이며, 푸터의 auto 미해결 표기는 `thinking.autoPending`을 사용한다(이 가이드는 변경하지 않음). 단어를 별도 계산하는 `thinkingLevelWord()` 경로는 심볼과 무관하다.
 
 ---
 
@@ -287,37 +350,53 @@ omp의 두 프렐류드는 AgentTool이 아니라 `eval` 커널에 마운트되�
 | `browser.cmux` / `tern` | `true` | `true` | macOS 네이티브 뷰 백엔드 — Windows에서는 후보에 들지 않는다 |
 | `browser.freezeOnTurnEnd` / `idleCloseSec` | `true` / `1800` | 기본 | omp 소유 탭의 턴 종료 동결 / 유휴 정리(초) |
 
-승인: `computer`의 입력·변경 헬퍼는 exec 티어다. 이 PC는 `tools.approvalMode`가 `yolo`(설치 기본값)라 묻지 않고 실행된다. 확인을 받고 싶으면 `tools.approvalMode: write`(조회·스크린샷은 자동 승인, 입력·변경만 질문) 또는 `tools.approval: { computer: prompt }`를 쓴다.
+### 권한·승인·사용자 동의는 별개
 
-### Windows에서의 동작
+1. **OS 권한:** 캡처·입력·접근성이 가능한지는 `computer.capabilities()`의 `capturePermission`/`inputPermission`/`axPermission`으로 확인한다. 이 macOS 환경에서 확인한 메뉴는 **시스템 설정 → 개인정보 보호 및 보안 → 기기 제어 및 데이터 접근**이다. 터미널 앱 권한을 허용한 뒤 터미널을 재시작했다(§8). 메뉴명은 macOS 버전에 따라 다를 수 있으며, `computer.enabled: true`나 도구 승인 정책으로 OS 권한을 대신 부여할 수 없다.
+2. **omp 도구 실행 승인:** 조회·스크린샷은 read 티어, 입력·변경은 exec 티어다. `tools.approvalMode` 등은 이 도구 호출의 승인 정책이다. `yolo`도 모든 종류의 동의나 권한을 없앤다는 뜻은 아니며, 이 가이드는 승인 정책을 변경하지 않는다.
+3. **작업 단위 제어와 중요한 동작의 동의:** `computer.control.acquire({reason})`로 전경 제어를 획득하려면 별도 실시간 사용자 확인이 필요하다. 획득했다면 작업 종료 시 `finally`에서 `computer.control.release()`로 해제한다. 제어 권한을 얻었더라도 전송·구매·삭제·권한 변경 등은 대상·범위에 대한 별도 승인이 필요하며, 일반적인 “제어 테스트” 요청이 이를 허용하지 않는다.
 
-- 백엔드 `win32`: 캡처·입력·UIA가 모두 네이티브이고, macOS와 달리 **권한 승인이 필요 없다** — `computer.capabilities()`가 `capturePermission`/`inputPermission`/`axPermission`을 `granted`로 보고한다.
+### Windows 과거 동작 기록 (18.11.1)
+
+- 백엔드 `win32`는 과거 검증 환경에서 캡처·입력·UIA를 네이티브로 지원했고, `capturePermission`/`inputPermission`/`axPermission`이 모두 `granted`였다. 이는 그 환경의 OS 권한 보고값이며, 모든 Windows 환경이나 모든 동작에 사용자 승인이 불필요하다는 의미가 아니다.
 - 스크린샷 저장: `computer`는 `%TEMP%\omp-computer-*.png`, `browser`는 `browser.screenshotDir`(미설정 시 `%TEMP%\omp-sshots-*.webp`).
-- managed 브라우저는 프로젝트 단위 공유 데몬이다. `omp ps`에 `omp.browser.headless`로 뜨며, 이 PC에서는 이미 설치돼 있던 `C:\Program Files\Google\Chrome\Application\chrome.exe`를 재사용했다(전용 프로필: `~/.omp/run/daemons/<hash>/omp.browser.headless.profile`). 없으면 첫 사용 시 자동 설치한다.
+- Windows 과거 검증에서는 관리형 headless 브라우저가 프로젝트 단위 공유 데몬 `omp.browser.headless`로 떴고, 설치돼 있던 `C:\Program Files\Google\Chrome\Application\chrome.exe`를 재사용했다(전용 프로필: `~/.omp/run/daemons/<hash>/omp.browser.headless.profile`). 필요한 브라우저가 없으면 첫 사용 시 준비된다.
 - 이미 로그인된 자기 Chrome 탭을 그대로 몰려면 relay: `omp browser-relay install`(확장을 `~/.omp/browser-relay/extension`에 풀고 로드 절차를 출력) → 확장 로드 → `browser.relay: true`.
 
-### 검증 (이 PC, omp 18.11.1 실측)
+### 공통 검증 순서
 
-```powershell
+먼저 CLI에서 프렐류드 설정을 확인한다:
+
+```sh
 omp config get computer.enabled   # true
 omp config get browser.enabled    # true
 omp config get eval.js            # true
-omp ps                            # omp.browser.headless  ready
 ```
 
-설정 파일을 고치면 omp가 파일을 감시해 **다음 Eval 호출부터** 새 프렐류드를 반영한다(재시작 불필요). Eval에서 직접 두드려 확인한다:
+설정 파일의 프렐류드 스위치는 다음 Eval 호출부터 반영된다. 다음 코드는 **셸이 아니라 omp의 JavaScript Eval**에서 실행한다. 권한 조회는 실제 입력 동작 검증과 별개다.
 
 ```js
-await computer.capabilities()
-// {backend:"win32", capture:true, input:true, ax:true, backgroundWindowInput:true, takeover:true,
-//  applications:true, menus:true, heldInput:true, spaces:false, globalEscape:true,
-//  capturePermission:"granted", inputPermission:"granted", axPermission:"granted",
-//  displayCount:1, screenLocked:false, displayAsleep:false, displayServer:"win32"}
+display(await computer.capabilities());
 const tab = await browser.open({ url: "https://example.com" });
-await tab.title(); await tab.evaluate(() => document.title); await tab.close();
+try {
+  display(await tab.title());     // Example Domain
+  display(await tab.observe());
+} finally {
+  await tab.close();              // 이 테스트에서 연 탭만 닫는다
+}
 ```
 
-실측 결과: capabilities가 `win32` + `capture`/`input`/`ax` 전부 `true`, `displayCount: 1`. 데스크톱 쪽은 창 열거 → 창 캡처(동시에 AX 트리 수집) → AX `setValue`로 메모장 본문 변경 → `move`/`click`/`type`(`ctrl+a` 포함, 백그라운드가 거부되면 `takeover:true`로 성공) → 클립보드 왕복까지 정상. 브라우저 쪽은 `open`/`observe`/`evaluate`/`screenshot`/`tabs`/`close` 정상. 1419×752 창 캡처가 축소 없이 그대로 전달돼, 이 모델 transport는 좌표 안전 캡(`1280×896`)에 걸리지 않는다.
+**브라우저를 연 뒤에만** 같은 프로젝트 디렉터리의 CLI에서 데몬을 확인한다:
+
+```sh
+omp ps
+```
+
+관리형 headless Chromium을 사용했다면 `omp.browser.headless`가 `ready`인 것이 확인 예시다. 첫 사용 전에는 없어도 정상이다. Tern/cmux 네이티브 뷰·외부 CDP·relay 등 다른 백엔드에서는 같은 데몬 이름이 나온다고 가정하지 않는다. 브라우저 동작 여부는 탭 열기·제목·페이지 관찰 결과로 판단한다.
+
+### Windows 과거 실측 결과
+
+Windows 18.11.1 기록: capabilities가 `win32` + `capture`/`input`/`ax` 전부 `true`, `displayCount: 1`이었다. 창 열거·캡처·AX 읽기, 메모장 AX `setValue`, 입력·클립보드 왕복을 확인했다. 브라우저 `open`/`observe`/`evaluate`/`screenshot`/`tabs`/`close`도 확인했다. 당시 창 캡처는 1419×752였으며, 이 결과를 다른 OS·모델 transport의 해상도나 권한 보장으로 해석하지 않는다. macOS의 별도 실측은 §8에 기록한다.
 
 ### 안 될 때
 
@@ -352,7 +431,7 @@ await tab.title(); await tab.evaluate(() => document.title); await tab.close();
 | 값이 아예 안 보임 | `preset`이 `custom`이 아니거나 `status` 누락, 또는 자격증명 없음 | `omp config get`, `/login <provider>` |
 | 밸런스가 입력창 **위**로 감 | `composer.shape: claude`에서 `rightSegments`는 입력창 위 꼬리줄에 그려짐 | `status`를 `leftSegments`에 유지 |
 | 값 끝에 `?` | 플러그인 갱신 실패(오프라인/429/5xx). 마지막 확인 값 유지 | `~/.omp/logs/omp.*.log`에서 `openrouter-credits:` / 갱신 재시도 |
-| `🎯`가 안 보임 | 아직 `cacheRead`가 0(첫 요청) — 세그먼트는 캐시 읽기가 있을 때만 표시 | 2번째 요청부터 확인 |
+| `🎯`가 안 보임 | 세그먼트 집계의 `cacheRead`가 0이면 숨겨짐 | 요청 횟수가 아니라 실제 캐시 읽기 발생 여부 확인. 두 번째 요청에도 숨겨질 수 있음 |
 | 아이콘이 💾 그대로 | 커스텀 테마 미적용(오타·JSON 오류 → `dark` 폴백) | `omp config get theme.dark`, `omp gallery --segment cache_hit --plain` |
 | 커스텀 테마가 무시됨 | `colors` 필수 토큰 누락 또는 JSON 오류 | §3의 내장 테마 복사부터 다시 |
 
@@ -364,40 +443,51 @@ await tab.title(); await tab.evaluate(() => document.title); await tab.close();
 
 ---
 
-## 6. 재설치 체크리스트 (복붙용)
+## 6. 재설치 체크리스트와 백업 범위
 
-```powershell
-# 1. 바이너리
-irm https://omp.sh/install.ps1 | iex
+### OS별 준비
 
-# 2. 자격증명 (이전 PC에서 export 후 import, 아니면 login)
-omp auth import credentials.json
-#   omp login opencode-go ; omp login openrouter
+- **Windows PowerShell:** §1-1의 Windows 설치 명령 → §1-2의 로그인 또는 UTF-8 인증 이전 → §3-1의 PowerShell 테마 복사.
+- **macOS zsh/bash:** §1-1의 macOS 설치 명령 → §1-2의 로그인 또는 인증 이전 → §3-1의 셸 테마 복사. 데스크톱 제어를 쓸 경우 §4의 OS 권한을 확인하고 필요 시 터미널을 재시작한다.
+- 이미 설치돼 있으면 설치기를 다시 실행하지 말고 `omp --version`부터 확인한다. 테마 버전은 설치 버전과 맞춘다.
 
-# 3. 설정 파일 (%USERPROFILE%\.omp\agent\config.yml) — §2의 키 병합
-#    (computer.enabled: true 포함)
+### 공통 복구 순서
 
-# 4. 커스텀 테마 (%USERPROFILE%\.omp\agent\themes\titanium-custom.json) — §3 절차
+1. 사용할 프로필을 결정한다. 아래 경로는 기본 프로필 기준이며, 이름 있는 프로필은 §1-3의 경로를 사용한다.
+2. `~/.omp/agent/config.yml`에 §2 키만 병합한다. 기존 모델·인증·머신별 값은 유지한다.
+3. `~/.omp/agent/themes/titanium-custom.json`에 §3의 이름 변경과 **전체 오버라이드**를 적용한다.
+4. `~/.omp/agent/RULES.md`에 §7 내용을 저장한다.
+5. 다음 플러그인 설치 명령을 실행한다(두 OS 공통):
 
-# 4-1. 전역 규칙 (%USERPROFILE%\.omp\agent\RULES.md) — §7 내용 저장
-
-# 5. 플러그인
+```sh
 omp plugin install github:pawprint0706/omp-opencode-go-usage
 omp plugin install github:pawprint0706/omp-openrouter-credits
-
-# 6. 검증
-omp plugin list
-omp config get statusLine.leftSegments
-omp config get theme.dark
-omp config get spelling.autocomplete
-omp config get computer.enabled       # true  (browser는 기본 on)
-omp gallery --segment status --plain --width 200
-omp gallery --segment cache_hit --plain --width 200
-omp ps                                # omp.browser.headless
-omp        # 하단 상태줄: 한 줄 + 🎯, Eval에서 프렐류드 스모크 테스트(§4)
 ```
 
-백업해 둘 것: `~/.omp/agent/config.yml`, `~/.omp/agent/themes/`, `~/.omp/agent/RULES.md`, `~/.omp/plugins/package.json` + `omp-plugins.lock.json`, 그리고 자격증명(`omp auth export`). `~/.omp/agent/*.db`, `sessions/`, `logs/`는 재설치와 무관한 런타임 데이터다.
+6. 다음 CLI 검증을 실행한다:
+
+```sh
+omp plugin list
+omp config get statusLine.leftSegments
+omp config get statusLine.compactThinkingLevel  # false
+omp config get theme.dark                      # titanium-custom
+omp config get spelling.autocomplete           # off
+omp config get computer.enabled                # true
+omp config get browser.enabled                 # true
+omp gallery --segment model --plain --width 200
+omp gallery --segment status --plain --width 200
+omp gallery --segment cache_hit --plain --width 200
+```
+
+7. omp를 다시 실행해 실제 TUI를 확인한다. 🎯는 캐시 읽기가 없으면 숨겨지므로 갤러리 결과와 구분한다.
+8. §4의 Eval 스모크로 브라우저를 먼저 연다. 관리형 headless Chromium을 사용한 경우 같은 프로젝트의 CLI에서 `omp ps`로 데몬을 추가 확인한다.
+
+### 백업 목적을 구분한다
+
+- **설정만 재현:** `config.yml`, `themes/`, `RULES.md`, `~/.omp/plugins/package.json`과 플러그인 잠금 파일(`omp-plugins.lock.json`), 별도로 안전하게 내보낸 인증을 보관한다. 사용하는 프로필별로 필요한 파일·인증을 챙긴다. 이 목록만으로 이전 대화·사용량 이력까지 복원되지는 않는다.
+- **대화·이력까지 보존:** `sessions/`와 필요한 DB도 백업 대상이다. 실제 18.11.2의 `agent.db`에는 `auth_credentials`, `settings`, `usage_history` 등의 테이블이 있으므로 **`*.db`를 모두 폐기 가능한 캐시로 취급하지 않는다.** 로그 보존 여부는 진단 필요와 민감정보 보관 정책에 따라 결정한다.
+- **전체 백업:** 관련 omp 프로세스·데몬을 정상 종료한 뒤 `~/.omp`와 사용하는 프로필 데이터를 암호화된 저장소에 일관된 스냅샷으로 보관한다. 실행 중 SQLite의 `.db`만 복사하면 WAL에 남은 변경을 놓칠 수 있으므로, 실행 중 백업이 필요하면 SQLite 백업 기능 등 일관성을 보장하는 방식을 사용한다. DB에는 자격증명이 포함될 수 있다.
+- **재설치와 삭제는 별개:** 바이너리 재설치는 사용자 데이터를 지우는 작업이 아니다. 재설치를 이유로 `~/.omp`, DB, 세션을 일괄 삭제하지 않는다. 전체 백업의 다른 OS·다른 버전 복원은 별도 호환성 확인이 필요하다.
 
 ---
 
@@ -431,7 +521,7 @@ omp        # 하단 상태줄: 한 줄 + 🎯, Eval에서 프렐류드 스모크
 ## 8. macOS 적용 기록 (2026-10-17)
 
 - Apple Silicon macOS의 **omp 18.11.2**에서 §2 설정, 플러그인 2종, §7 전역 규칙을 적용했다. 기존 모델·인증·설치 설정은 유지했다.
-- 이미 omp가 설치되어 있으면 재설치는 필요 없다. 신규 설치는 공식 macOS 셸 설치 스크립트 `https://omp.sh/install.sh`를 검토한 뒤 실행한다. PowerShell 명령과 Windows 네이티브 애드온 경로는 사용하지 않는다.
+- macOS 신규 설치·테마 복사 절차는 §1·§3에 분리했다. 이 기록은 기존 설치본을 이용한 검증이며, Windows 설치 명령이나 애드온 파일을 macOS에서 재사용하지 않는다.
 - 설정 경로는 동일하게 `~/.omp/agent/config.yml`, `~/.omp/agent/themes/titanium-custom.json`, `~/.omp/agent/RULES.md`다. 테마는 설치 버전과 일치하는 `v18.11.2`의 titanium JSON을 복사하고 §3의 이름·아이콘 변경만 적용했다.
 - `omp plugin list`에서 두 플러그인의 활성 상태를 확인했다. 실제 TUI 하단 한 줄에서 OpenCode Go 사용률과 `OR $4.87`이 ` · `로 연결됨을 확인했다(잔액·사용률은 조회 시점 값).
 - `omp gallery --segment cache_hit --plain --width 200`에서 `🎯 77.92%`, `status` 갤러리에서 `Indexer ready · Tests passing`을 확인했다. 새 TUI에서 캐시 읽기가 없으면 🎯가 숨겨지는 동작은 동일하다.
@@ -441,5 +531,5 @@ omp        # 하단 상태줄: 한 줄 + 🎯, Eval에서 프렐류드 스모크
 - 실제 컴퓨터 제어 검증: 계산기 창의 화면 캡처·접근성 트리 읽기에 성공했고, 접근성 버튼으로 `123 + 456 = 579`, 네이티브 키보드 입력으로 `7 × 8 = 56`을 계산해 화면·접근성 값으로 확인했다. macOS에서 `press('*')`는 키코드로 지원되지 않으므로 `press('shift+8')`을 사용했다.
 - 실제 브라우저 제어 검증: 관리형 Chromium에서 `example.com` 제목·페이지를 읽고, 독립 테스트 페이지에 `맥OS 브라우저 제어 정상`을 입력한 뒤 확인 버튼을 클릭해 `확인: 맥OS 브라우저 제어 정상` 표시와 화면 캡처를 확인했다. 테스트 탭은 닫았으며 기존 문서·로그인된 브라우저 탭은 변경하지 않았다.
 - 테마·상태줄과 새 플러그인을 현재 대화에도 확실히 반영하려면 omp를 종료 후 다시 실행한다. 전역 규칙은 새 세션 또는 `/new`·`/clear`에서 다시 읽는다.
-- effort 레벨은 기호 대신 단어로 표시하고(§3-5), 모델명 앞 아이콘(`icon.model` `⬢`)도 제거했다: `statusLine.compactThinkingLevel: false` + 테마 `symbols.overrides`(`icon.cache`, `icon.model: ""`, `thinking.minimal/low/medium/high/xhigh/max`). 상태줄은 `π · DeepSeek V4.1 Flash · high · …`로 시작한다. `off`의 `⦸`와 `auto` 미해결의 `⟳`는 남긴다 — 둘 다 표기 문자열이 코드에 하드코딩돼 있어(각각 `status.disabled` 공유, 글리프 뒤 공백 고정) 상태줄만 떼어낼 수 없다.
+- 최종 표기는 §0의 예시와 같다. `compactThinkingLevel: false`와 §3의 전체 오버라이드로 6단계 effort를 단어로 표시하고 모델 아이콘을 제거했다. `off`는 공유 비활성 표식을 보존하기 위해, 미해결 `auto`는 글리프 제거 시 남는 고정 공백을 피하기 위해 기본 글리프를 유지하기로 했다. 이 제한은 18.11.2의 현재 설정·테마 방식에 관한 것이며 코드 수정까지 불가능하다는 뜻은 아니다.
 
