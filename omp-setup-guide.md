@@ -1,9 +1,9 @@
 # omp 셋업 가이드 (Windows · macOS)
 
-기본 프로필의 설정을 재설치 후 복구하기 위한 가이드. §1–7은 공통 설정과 OS별 절차, §8은 macOS 적용·검증 기록이다.
+기본 프로필의 설정을 재설치 후 복구하기 위한 가이드. §1–7은 공통 설정과 OS별 절차, §8은 macOS, §9는 Windows 적용·검증 기록이다.
 
-- **현재 복구 기준:** macOS Apple Silicon, omp **18.11.2**. 한 줄 상태줄, 🎯 캐시 아이콘, effort 문자열 표시, 모델 아이콘 제거, 플러그인 2종, 전역 규칙, Eval 프렐류드, 입력 단어 자동완성 off.
-- **Windows 과거 검증:** Windows 10 x64, Git Bash, omp 18.11.0 기준(검증 설치본 18.11.1), `opencode-go` + `openrouter`. 이후 추가한 effort·모델 아이콘 설정은 macOS 18.11.2에서 확인했으며 Windows에서는 재검증하지 않았다.
+- **현재 복구 기준:** Windows 10 x64·macOS Apple Silicon, omp **18.11.2**. 한 줄 상태줄, 🎯 캐시 아이콘, effort 문자열 표시, 모델 아이콘 제거, 플러그인 2종, 전역 규칙, Eval 프렐류드, 입력 단어 자동완성 off.
+- **Windows 재검증:** Windows 10 x64, Git Bash, omp **18.11.2**에서 최신 공통 설정을 적용했다. 기존 모델 `openai-codex/gpt-6-astra:high`와 인증은 유지했고, effort·모델 아이콘·상태줄·브라우저·데스크톱 동작을 확인했다(§9). 18.11.1 검증은 §4의 과거 기록으로 구분한다.
 - 모델·프로바이더·인증은 기존 값을 유지한다. 아래 DeepSeek 모델명과 사용량·잔액은 표시 예시이며 고정 설정값이 아니다.
 
 작성: 2026-10-15, 갱신: 2026-10-17.
@@ -287,7 +287,7 @@ theme:
 - 우선순위: 설정 `symbolPreset` > 테마 `symbols.preset` > 기본 `unicode`. `overrides`는 그 위에 적용된다.
 - 검증: `omp gallery --segment cache_hit --plain` → `🎯 77.92%` (기본값 💾가 아니면 오버라이드가 먹은 것).
 - 커스텀 테마가 로드되지 않으면(JSON 오류·필수 토큰 누락) omp는 조용히 `dark`로 폴백한다 → `omp config get theme.dark`와 `~/.omp/logs`를 함께 본다.
-- 복사본은 **스냅샷**이다. omp 업데이트로 내장 테마가 바뀌면 설치 버전에 맞는 파일을 다시 복사한 뒤 이름 변경과 위 전체 `symbols` 블록을 재적용한다. Windows 과거 기록은 v18.11.0, macOS 검증은 v18.11.2의 titanium을 사용했다.
+- 복사본은 **스냅샷**이다. omp 업데이트로 내장 테마가 바뀌면 설치 버전에 맞는 파일을 다시 복사한 뒤 이름 변경과 위 전체 `symbols` 블록을 재적용한다. Windows 과거 기록은 v18.11.0, macOS 검증은 v18.11.2의 titanium을 사용했다. Windows 재검증에서는 기존 테마의 기본 속성이 v18.11.2와 동일함을 확인해 덮어쓰지 않고 전체 심볼 오버라이드만 병합했다(§9).
 - 라이트 터미널에서도 같은 방식으로: `theme.light`용 복사본에 같은 `overrides`를 넣는다.
 
 ### 다른 아이콘도 바꾸려면
@@ -397,6 +397,8 @@ omp ps
 ### Windows 과거 실측 결과
 
 Windows 18.11.1 기록: capabilities가 `win32` + `capture`/`input`/`ax` 전부 `true`, `displayCount: 1`이었다. 창 열거·캡처·AX 읽기, 메모장 AX `setValue`, 입력·클립보드 왕복을 확인했다. 브라우저 `open`/`observe`/`evaluate`/`screenshot`/`tabs`/`close`도 확인했다. 당시 창 캡처는 1419×752였으며, 이 결과를 다른 OS·모델 transport의 해상도나 권한 보장으로 해석하지 않는다. macOS의 별도 실측은 §8에 기록한다.
+
+최신 **Windows 18.11.2 재검증은 §9**에 기록한다. 이번에는 계산기의 AX 버튼 조작과 브라우저 입력·클릭을 검증했으며, 위 18.11.1의 키보드·포인터·클립보드 결과를 새 버전의 재검증 결과로 재사용하지 않는다.
 
 ### 안 될 때
 
@@ -533,3 +535,33 @@ omp gallery --segment cache_hit --plain --width 200
 - 테마·상태줄과 새 플러그인을 현재 대화에도 확실히 반영하려면 omp를 종료 후 다시 실행한다. 전역 규칙은 새 세션 또는 `/new`·`/clear`에서 다시 읽는다.
 - 최종 표기는 §0의 예시와 같다. `compactThinkingLevel: false`와 §3의 전체 오버라이드로 6단계 effort를 단어로 표시하고 모델 아이콘을 제거했다. `off`는 공유 비활성 표식을 보존하기 위해, 미해결 `auto`는 글리프 제거 시 남는 고정 공백을 피하기 위해 기본 글리프를 유지하기로 했다. 이 제한은 18.11.2의 현재 설정·테마 방식에 관한 것이며 코드 수정까지 불가능하다는 뜻은 아니다.
 
+---
+
+## 9. Windows 적용·재검증 기록 (2026-10-17)
+
+- 최신 가이드 커밋 `13730f1`을 기준으로 **Windows 10 x64, omp 18.11.2**의 기본 프로필에 적용했다. 바이너리는 이미 18.11.2여서 재설치·업데이트하지 않았다.
+- `~/.omp/agent/config.yml`의 `statusLine`에 **`compactThinkingLevel: false`**를 추가했다. `computer.enabled: true`, 입력 자동완성 `"off"`, 테마 선택과 나머지 §2 설정은 이미 일치했다. 기존 `shellPath`, 모델 `openai-codex/gpt-6-astra:high`, 인증·도구 승인 정책은 변경하지 않았다.
+- `~/.omp/agent/themes/titanium-custom.json`의 `$schema`·`vars`·`colors`·`export`·`terminal`을 공식 `v18.11.2` titanium JSON과 비교해 모두 동일함을 확인했다. 기존 파일을 덮어쓰지 않고 `icon.cache`를 유지하면서 `icon.model: ""`와 6단계 `thinking.*` 단어 오버라이드를 병합했다. `thinking.autoPending`·`status.disabled`는 변경하지 않았다.
+- `~/.omp/agent/RULES.md`는 §7과 일치해 유지했다. `omp plugin list`에서 `omp-opencode-go-usage@1.0.0`, `omp-openrouter-credits@1.0.0`이 모두 활성 상태였다. 플러그인 재설치는 하지 않았다.
+
+### 상태줄 검증
+
+| 실행 | 관찰 결과 |
+|---|---|
+| `omp config get statusLine.compactThinkingLevel` | `false` |
+| `omp gallery --segment model --plain --width 200` | 기본 사례 `Sonnet 4.5 · high` — 모델 아이콘·effort 글리프 없음 |
+| `omp gallery --segment status --plain --width 200` | `Indexer ready · Tests passing` |
+| `omp gallery --segment cache_hit --plain --width 200` | `🎯 77.92%` |
+| 새 TUI `omp --no-session --no-title` | 하단 한 줄에서 `GPT-6 Astra · high`와 `5h 0% \| Wk 1% \| Mo 0% · OR $4.68` 확인 |
+
+새 TUI는 PTY에서 실행해 플러그인 값이 로드된 실제 출력을 확인한 뒤 검증 명령의 제한 시간으로 종료됐다. 사용률·잔액은 조회 시점 값이다. 모델 요청은 보내지 않았고, 새 세션에 캐시 읽기가 없어 실제 TUI에는 🎯가 표시되지 않았다. 캐시 아이콘 검증은 갤러리 결과와 구분한다.
+
+### computer-use / browser-use 재검증
+
+- CLI에서 `computer.enabled`, `browser.enabled`, `eval.js`가 모두 `true`였다.
+- `computer.capabilities()`는 `backend: win32`, `capture/input/ax: true`, 세 권한 모두 `granted`, `displayCount: 1`, `screenLocked/displayAsleep: false`를 보고했다. 이 보고값만으로 모든 입력 경로가 검증됐다고 판단하지 않는다.
+- 새로 연 Windows 계산기의 **315×534 창 캡처와 AX 트리**를 확인했다. AX 버튼으로 `123 + 456 =`를 입력하고, 새 AX의 `표시는 579`와 화면의 `579`를 모두 확인했다. 이번 검증에서는 네이티브 키보드·좌표 입력·클립보드를 변경하지 않았고 전경 제어권도 획득하지 않았다.
+- 관리형 headless 브라우저에서 `https://example.com`의 제목 `Example Domain`과 페이지를 관찰했다. 이어 독립 `data:` 테스트 페이지에 `Windows 브라우저 제어 정상`을 입력하고 확인 버튼을 클릭해 **`확인: Windows 브라우저 제어 정상`** 텍스트와 화면 캡처를 확인했다.
+- 브라우저 사용 후 `omp ps`에서 `omp.browser.headless`가 `ready`였고, 실행 파일은 기존 `C:\Program Files\Google\Chrome\Application\chrome.exe`였다. 로그인된 사용자 브라우저 탭이나 relay는 사용하지 않았다.
+- 테스트용 계산기 창과 브라우저 탭만 닫고 목록에서 사라진 것을 확인했다. 데스크톱 제어 세션도 종료했다. 기존 문서·클립보드·로그인 상태는 변경하지 않았다.
+- 현재 실행 중인 omp의 테마·상태줄에도 확실히 반영하려면 종료 후 다시 실행한다. 설정·테마·전역 규칙은 사용자 디렉터리에 있고, 저장소에는 이 검증 기록만 반영한다.
