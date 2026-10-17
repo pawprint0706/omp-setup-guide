@@ -3,7 +3,7 @@
 기본 프로필의 설정을 재설치 후 복구하기 위한 가이드. §1–7은 공통 설정과 OS별 절차, §8은 macOS, §9는 Windows 적용·검증 기록이다. §10은 Codex 사용량 추가와 OpenCode 접두어 적용 기록, §11은 두 줄 레이아웃 적용 기록이다.
 
 - **현재 복구 구성:** 두 줄 상태줄(첫째 줄 캐시·지출액, 둘째 줄 CO·OC·OR), 🎯 캐시 아이콘, effort 문자열 표시, 모델 아이콘 제거, **조회 플러그인 3종 + `omp-usage-row` 레이아웃 확장**, 전역 규칙, Eval 프렐류드, 입력 단어 자동완성 off. 기존 공통 설정은 Windows 10 x64·macOS Apple Silicon의 omp 18.11.2에서 검증했고, 최신 두 줄 상태줄은 **macOS omp 18.11.3**에서 확인했다(§11).
-- **Windows 재검증:** Windows 10 x64, Git Bash, omp **18.11.2**에서 당시 2종 플러그인 구성을 적용했다. 기존 모델 `openai-codex/gpt-6-astra:high`와 인증을 유지하고 effort·모델 아이콘·상태줄·브라우저·데스크톱 동작을 확인했다(§9). 18.11.1 검증은 §4의 과거 기록이며, §10–11의 Codex 추가·OC 접두어·두 줄 레이아웃은 Windows에서 별도로 재검증하지 않았다.
+- **Windows 재검증:** Windows 10 x64, Git Bash, omp **18.11.3**에서 Codex 추가·OC 접두어·두 줄 레이아웃을 적용하고 세 그룹의 실제 조회·배치를 확인했다(§12). §9의 18.11.2 및 §4의 18.11.1 검증은 당시 구성의 과거 기록이다.
 - 모델·프로바이더·인증은 기존 값을 유지한다. 아래 DeepSeek 모델명과 사용량·잔액은 표시 예시이며 고정 설정값이 아니다.
 
 작성: 2026-10-15, 갱신: 2026-10-17.
@@ -658,3 +658,23 @@ CO 5h 49% | Wk 8% · OC 5h 0% | Wk 2% | Mo 1% · OR $4.65
 - Codex·OpenCode Go·OpenRouter를 각각 `github:pawprint0706/omp-codex-usage`, `github:pawprint0706/omp-opencode-go-usage`, `github:pawprint0706/omp-openrouter-credits`에서 강제 설치했다. 사용자 플러그인 `package.json`의 세 의존성이 이 GitHub 주소이며, 설치 디렉터리가 심볼릭 링크가 아닌 것을 확인했다.
 - 기존 로컬 원본 프로젝트는 변경·삭제하지 않았다. `omp-usage-row`는 이 가이드 저장소로 연결된 로컬 확장을 유지했고, 중복 조회를 막기 위해 조회 원본 3종의 자동 로딩은 비활성 상태를 유지했다.
 - macOS omp 18.11.3의 80열 실제 TUI에서 `π · CO 5h 8% | Wk 1% · OC 5h 0% | Wk 2% | Mo 1% · OR $4.65`를 확인했다(조회 시점 값). 두 줄 배치·Pi 정렬·사용량과 Pi의 동일색·dot 색상 유지도 확인했다. 모델 요청은 보내지 않았고 검증 프로세스는 종료했다.
+
+---
+
+## 12. Windows 조회 플러그인·두 줄 레이아웃 적용 (2026-10-17)
+
+- 최신 가이드 커밋 `a9a8041` 기준으로 기존 Windows omp **18.11.3**에 적용했다. 기존 모델 `openai-codex/gpt-6.1-sol:medium`, 인증·승인 정책·커스텀 테마·전역 규칙은 유지했다.
+- §1-5의 GitHub 강제 설치 명령으로 Codex를 신규 설치하고 OpenCode Go·OpenRouter를 최신 설치본으로 맞췄다. 세 패키지는 심볼릭 링크가 아닌 GitHub 설치본이며, OpenCode 코드의 `OC` 접두어도 확인했다.
+- `omp plugin install .`로 `omp-usage-row`를 `C:\Projects\omp-setup-guide`에 연결했다. 조회 원본 3종은 자동 로딩만 비활성화하고 통합 확장만 활성화했다. 이 저장소 폴더를 유지해야 한다.
+- `statusLine.leftSegments`에서 `status`를 제거하고 `showHookStatus: true`로 변경했다. 나머지 §2 설정과 §3 테마 오버라이드는 유지했다.
+- `omp plugin doctor` 결과는 **7 ok, 0 warnings, 0 errors**였다.
+- 실제 PTY에서 `omp --no-session --no-title`을 실행해 첫째 줄의 `GPT-6.1 Sol · medium`·컨텍스트·`(sub)` 바로 아래 한 행에 다음 조회 결과가 함께 나오는 것을 확인했다:
+
+```text
+ π · GPT-6.1 Sol · medium · 📁 C:\Projects\omp-setup-guide · ⑂ main · ◫ 1.6%/500K ⟲ · (sub)
+ π · CO 5h 11% | Wk 2% · OC 5h 0% | Wk 2% | Mo 1% · OR $4.64
+```
+
+- 수치는 조회 시점 값이다. 세 그룹이 모두 조회됐고 `?` 오류 표식·중복 사용량 행·확장 로딩 오류는 없었다. 새 세션에는 모델 요청을 보내지 않아 캐시 읽기 아이콘은 표시되지 않았다.
+- 사용량의 `dim` 색상과 dot의 `statusLineSep`, 둘째 줄 들여쓰기는 저장소의 확장을 그대로 사용한다. 이번 검증에서는 터미널 셀의 RGB 값이나 좁은 폭별 배치를 별도로 측정하지 않았다.
+- 검증 프로세스는 12초 제한으로 종료했다. 현재 대화의 기존 확장 로딩을 교체하려면 omp를 종료 후 다시 실행한다. 로그인이나 모델 변경은 필요하지 않다.
