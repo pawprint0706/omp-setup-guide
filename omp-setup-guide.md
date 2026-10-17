@@ -1,19 +1,20 @@
 # omp 셋업 가이드 (Windows · macOS)
 
-기본 프로필의 설정을 재설치 후 복구하기 위한 가이드. §1–7은 공통 설정과 OS별 절차, §8은 macOS, §9는 Windows 적용·검증 기록이다. §10은 Codex 사용량 추가와 OpenCode 접두어 적용 기록이다.
+기본 프로필의 설정을 재설치 후 복구하기 위한 가이드. §1–7은 공통 설정과 OS별 절차, §8은 macOS, §9는 Windows 적용·검증 기록이다. §10은 Codex 사용량 추가와 OpenCode 접두어 적용 기록, §11은 두 줄 레이아웃 적용 기록이다.
 
-- **현재 복구 구성:** 한 줄 상태줄, 🎯 캐시 아이콘, effort 문자열 표시, 모델 아이콘 제거, **플러그인 3종(Codex·OpenCode Go 사용률, OpenRouter 잔액)**, 전역 규칙, Eval 프렐류드, 입력 단어 자동완성 off. 기존 공통 설정은 Windows 10 x64·macOS Apple Silicon의 omp 18.11.2에서 검증했고, 3종 상태줄은 **macOS omp 18.11.3**에서 확인했다(§10).
-- **Windows 재검증:** Windows 10 x64, Git Bash, omp **18.11.2**에서 당시 2종 플러그인 구성을 적용했다. 기존 모델 `openai-codex/gpt-6-astra:high`와 인증을 유지하고 effort·모델 아이콘·상태줄·브라우저·데스크톱 동작을 확인했다(§9). 18.11.1 검증은 §4의 과거 기록이며, §10의 Codex 추가·OC 접두어 변경은 Windows에서 별도로 재검증하지 않았다.
+- **현재 복구 구성:** 두 줄 상태줄(첫째 줄 캐시·지출액, 둘째 줄 CO·OC·OR), 🎯 캐시 아이콘, effort 문자열 표시, 모델 아이콘 제거, **조회 플러그인 3종 + `omp-usage-row` 레이아웃 확장**, 전역 규칙, Eval 프렐류드, 입력 단어 자동완성 off. 기존 공통 설정은 Windows 10 x64·macOS Apple Silicon의 omp 18.11.2에서 검증했고, 최신 두 줄 상태줄은 **macOS omp 18.11.3**에서 확인했다(§11).
+- **Windows 재검증:** Windows 10 x64, Git Bash, omp **18.11.2**에서 당시 2종 플러그인 구성을 적용했다. 기존 모델 `openai-codex/gpt-6-astra:high`와 인증을 유지하고 effort·모델 아이콘·상태줄·브라우저·데스크톱 동작을 확인했다(§9). 18.11.1 검증은 §4의 과거 기록이며, §10–11의 Codex 추가·OC 접두어·두 줄 레이아웃은 Windows에서 별도로 재검증하지 않았다.
 - 모델·프로바이더·인증은 기존 값을 유지한다. 아래 DeepSeek 모델명과 사용량·잔액은 표시 예시이며 고정 설정값이 아니다.
 
 작성: 2026-10-15, 갱신: 2026-10-17.
 
 ## 0. 목표 상태
 
-하단 상태줄이 **한 줄**이고, 모델 아이콘 없이 모델명 뒤에 effort 단어가 표시된다. 캐시 히트율은 🎯, 플러그인 값은 ` · `로 이어져 끝에 붙는다. 최종 설정의 표시 예시:
+하단 상태줄은 **두 줄**이다. 첫째 줄은 모델·컨텍스트·🎯 캐시 적중률·지출액까지, 둘째 줄은 같은 `π` 배지 뒤에 **CO → OC → OR를 줄바꿈 없이** ` · `로 이어 표시한다. 사용량 문자열은 기본 구분자와 같은 `statusLineSep` 회색을 사용한다. 모델 아이콘 없이 모델명 뒤에 effort 단어가 표시된다. 표시 예시:
 
 ```
-π · DeepSeek V4.1 Flash · high · 📁 omp-setup-guide · ◫ 0.9%/1M ⟲ · 🎯 49.17% · $0.00 · CO 5h 22% | Wk 19% · OC 5h 2% | Wk 0% | Mo 0% · OR $4.89
+ π · DeepSeek V4.1 Flash · high · 📁 omp-setup-guide · ◫ 0.9%/1M ⟲ · 🎯 49.17% · $0.00
+ π · CO 5h 22% | Wk 19% · OC 5h 2% | Wk 0% | Mo 0% · OR $4.89
 ```
 
 | 조각 | 출처 |
@@ -25,6 +26,8 @@
 | `OR $4.89` | 플러그인 `omp-openrouter-credits` |
 
 `CO`·`OC`는 **사용한 비율**(남은 비율 아님), `OR`는 계정 잔액이다. 그룹 내부는 ` | `, 플러그인 그룹 사이는 ` · `로 구분한다. Codex는 기본 플랜의 실제 기간만 표시하므로 주간 전용 플랜에서는 `CO Wk …%`만 보이며 월간 한도를 만들어 표시하지 않는다. 인증이 없거나 최초 조회에 실패한 그룹은 숨겨질 수 있다.
+
+둘째 줄 배지는 현재 테마의 `icon.omp`를 사용하며, 기본 프로필의 유휴 상태인 윗줄과 같은 `dim` 색상이다. 배지 뒤 구분자와 사용량 전체에는 `statusLineSep`를 적용한다(현재 titanium-custom: `#2a3038`). 색상값을 코드에 고정하지 않는다. 윗줄의 작업 중 스피너까지 복제하는 배지는 아니다.
 
 ---
 
@@ -99,19 +102,29 @@ omp auth import credentials.json
 
 🎯 캐시 아이콘·effort 문자열·모델 아이콘 제거용. §3에서 OS에 맞게 내장 테마를 복사하고 **전체 오버라이드 블록**을 병합한다. 이미 맞춰둔 PC가 있으면 완성된 테마 파일을 복사해도 된다.
 
-### 5) 플러그인 3종
+### 5) 조회 플러그인 3종 + 사용량 행 확장
 
 ```powershell
 omp plugin install github:pawprint0706/omp-codex-usage
 omp plugin install github:pawprint0706/omp-opencode-go-usage
 omp plugin install github:pawprint0706/omp-openrouter-credits
-omp plugin list                      # ● 로 enabled 3개 확인
 ```
 
-- 로컬 클론이 있으면 `omp plugin install <경로>`로 연결할 수 있다(junction/symlink). 같은 플러그인을 수동 extension 복사와 플러그인 설치로 중복 로드하지 않는다. 로컬 연결은 원본 프로젝트의 변경을 반영하므로 새 omp 세션에서 확인한다.
-- 플러그인이 배포하는 `statusline.yml`은 **참고용이며 자동 병합되지 않는다**. 현재 §2의 `preset: custom`, `leftSegments` 끝의 `status`, `showHookStatus: false`면 3종 모두 같은 하단 행에 표시된다. `CO`·`OC`·`OR`는 플러그인 문자열의 접두어이지 `leftSegments`에 추가할 별도 세그먼트가 아니다. 플러그인 예제 목록으로 기존 테마·`cache_hit`·`segmentOptions`를 덮어쓰지 않는다.
+이 가이드 저장소의 루트에서 다음을 실행한다(Windows PowerShell·macOS 공통). `omp plugin install .`은 저장소를 로컬 플러그인으로 연결하므로 이후에도 폴더를 유지한다:
+
+```sh
+omp plugin install .
+omp plugin disable omp-codex-usage
+omp plugin disable omp-opencode-go-usage
+omp plugin disable omp-openrouter-credits
+omp plugin list   # omp-usage-row만 ●, 원본 조회 플러그인 3종은 ⦸
+```
+
+- `omp-usage-row`는 이 저장소의 `extensions/usage-row.ts`로 구현된다. 설치된 세 플러그인의 조회 함수를 그대로 실행하되 UI 출력만 `usage-row` 키 하나로 합친다. 원본 3종의 **자동 로딩만 비활성화**하며 삭제하지 않는다. 다시 활성화하면 조회·표시가 중복된다.
+- 원본 조회 플러그인은 기본 사용자 경로 `~/.omp/plugins/node_modules/<name>`에 설치한다. 다른 플러그인 루트는 이 확장의 지원 범위가 아니다. 원본이 로컬 클론이면 `omp plugin install <경로>`로 연결할 수 있지만, 설치 후 자동 로딩 비활성 상태를 다시 확인한다. 수동 extension 복사로 중복 로드하지 않는다.
+- 플러그인이 배포하는 `statusline.yml`은 **참고용이며 자동 병합되지 않는다**. 현재 §2는 `leftSegments`에서 `status`를 빼고 `showHookStatus: true`를 사용한다. 합쳐진 훅 하나만 둘째 줄에 표시되며, `CO`·`OC`·`OR`는 세그먼트 이름이 아니다. 플러그인 예제로 기존 테마·`cache_hit`·`segmentOptions`를 덮어쓰지 않는다.
 - Windows 과거 설치 커밋(참고): `omp-opencode-go-usage#fda9a4e`, `omp-openrouter-credits#a302954`. 재설치는 브랜치 최신을 받으므로 이 커밋과 같다고 보장하지 않는다.
-- 플러그인 자체 설명서: `~/.omp/plugins/node_modules/<name>/README.md`.
+- 원본 조회 플러그인 설명서: `~/.omp/plugins/node_modules/<name>/README.md`. `omp-usage-row`의 설치·복구 설명서는 이 가이드다.
 - OpenCode의 `OC` 접두어는 테마 설정이 아니라 플러그인 코드 변경이다. 예전 GitHub 설치본이면 `omp plugin upgrade omp-opencode-go-usage`로 갱신하고, 로컬 연결이면 원본 프로젝트의 해당 변경을 반영한다. 버전이 동일한 `1.0.0`이어도 코드가 다를 수 있으므로 버전 문자열만으로 접두어 적용을 판단하지 않는다.
 - **18.11.3의 갱신 주의:** `omp plugin upgrade omp-opencode-go-usage --dry-run`이 실제로 설치본을 갱신하고 로컬 링크를 GitHub 설치본으로 교체하는 동작을 관찰했다. 이 명령의 `--dry-run`을 무변경 검사로 사용하지 않는다. 로컬 연결은 원본 프로젝트를 관리하고, 링크가 바뀌면 `omp plugin install <원래 로컬 경로>`로 다시 연결한다.
 - 설치·갱신 후 omp를 다시 실행해 실제 상태줄을 확인한다. Codex·OpenCode는 시작 시, 턴 종료 시, 90초 주기로 조회한다. 기존 로그인·모델·승인 정책은 유지한다.
@@ -131,14 +144,14 @@ omp plugin list                      # ● 로 enabled 3개 확인
 
 ```powershell
 omp config get statusLine.preset          # custom
-omp config get statusLine.leftSegments    # [..."context_pct","cache_hit","cost","status"]
-omp config get statusLine.showHookStatus  # false
+omp config get statusLine.leftSegments    # [..."context_pct","cache_hit","cost"] — status 없음
+omp config get statusLine.showHookStatus  # true
 omp config get statusLine.compactThinkingLevel # false
 omp config get theme.dark                 # titanium-custom
 omp config get spelling.autocomplete      # off
 omp config get computer.enabled           # true
 omp config get browser.enabled            # true
-omp plugin list                           # ● 3개
+omp plugin list                           # omp-usage-row만 활성, 조회 원본 3종은 비활성
 
 omp gallery --segment status --plain --width 200      # 훅 상태가 ' · '로 이어진 형태
 omp gallery --segment cache_hit --plain --width 200   # 🎯 77.92%  ← 아이콘 오버라이드 확인
@@ -148,7 +161,7 @@ omp                                                   # 실제 TUI 확인 후 §
 
 `omp gallery`는 자격증명 없이 세그먼트 렌더만 결정적으로 확인하는 도구다(`status`는 `Indexer ready · Tests passing`처럼 이어 붙여, `cache_hit`은 현재 테마의 아이콘으로 그린다). 두 프렐류드가 실제로 동작하는지는 Eval에서 확인한다 — §4.
 
-사용량 플러그인 검증은 실제 TUI에서 `CO`·`OC`·`OR`를 확인한다. `status` 갤러리는 샘플 훅 문자열을 렌더링할 뿐, 세 플러그인의 인증이나 API 조회 성공을 증명하지 않는다.
+사용량 플러그인 검증은 실제 TUI에서 **첫째 줄 바로 아래 한 행에 CO·OC·OR가 함께 표시되는지** 확인한다. `status` 갤러리는 샘플 훅 문자열만 렌더링하므로 실제 두 줄 배치·인증·API 조회 성공을 증명하지 않는다.
 
 `omp ps`는 §4의 `browser.open()` 이후에 확인한다. 첫 사용 전에는 브라우저 데몬이 없어도 정상이다. 🎯는 실제 캐시 읽기가 있을 때만 표시되므로 첫 TUI 화면에 없다고 실패로 판단하지 않는다.
 
@@ -172,14 +185,14 @@ statusLine:
   preset: custom
   # effort 레벨을 모델명 아이콘으로 접지 않고 ` · <레벨>` 문자열로 남긴다 (§3-5)
   compactThinkingLevel: false
-  leftSegments: [pi, vim, model, mode, collab, stream, path, git, pr, context_pct, cache_hit, cost, status]
+  leftSegments: [pi, vim, model, mode, collab, stream, path, git, pr, context_pct, cache_hit, cost]
   rightSegments: [session_name]
   separator: powerline-thin
   segmentOptions:
     model: { showThinkingLevel: true }
     path: { abbreviate: true, maxLength: 40, stripWorkPrefix: true }
     git: { showBranch: true, showStaged: true, showUnstaged: true, showUntracked: true }
-  showHookStatus: false
+  showHookStatus: true
 
 # 4) 입력 단어 자동완성 off
 spelling:
@@ -200,7 +213,7 @@ computer:
   | 기본 `segmentOptions` | `model.showThinkingLevel`, `path.abbreviate/maxLength=40/stripWorkPrefix`, `git.show*` 4종 |
 
 - `preset: custom`은 `segmentOptions`가 **빈 맵에서 시작**한다. 위 블록을 생략하면 경로 축약·깃 플래그·thinking 아이콘이 사라진다.
-- `composer.shape: claude`는 배치를 정한다: `rightSegments`는 입력창 **위** 꼬리줄, `leftSegments`는 **하단 행**에 그려진다. 그래서 캐시 히트율·플러그인 값이 하단 한 줄에 모인다(`rightSegments`로 옮기면 입력창 위로 올라간다). 기본값은 `band`.
+- `composer.shape: claude`는 배치를 정한다: `rightSegments`는 입력창 **위** 꼬리줄, `leftSegments`는 **하단 첫째 줄**이다. `omp-usage-row`의 합쳐진 훅 상태가 그 바로 아래 둘째 줄에 붙는다. `status`를 어느 세그먼트 목록에도 넣지 않는다. 기본 컴포저는 `band`.
 - `statusLine.compactThinkingLevel: false`는 effort 레벨을 **모델명 아이콘으로 접지 않고** ` · <레벨>` 문자열로 남긴다. 기본값 `true`에서는 레벨 표시가 모델명 앞 아이콘 하나(`◒ DeepSeek…`)로 접히고 문자열은 사라진다. 레벨 문자열 자체는 심볼 값(`thinking.*`)이라 기호를 떼려면 §3-5의 오버라이드가 함께 필요하다.
 - `spelling.autocomplete: off`는 **입력창 단어 자동완성(고스트 힌트)만** 끈 값이다. 같은 `interaction → Input` 그룹의 자동완성 항목은 서로 독립이라 따로 지정해야 한다:
 
@@ -431,20 +444,21 @@ Windows 18.11.1 기록: capabilities가 `win32` + `capture`/`input`/`ax` 전부 
 
 ## 5. 왜 이 설정이 필요한가 (증상 재발 시 진단)
 
-세 플러그인은 `ctx.ui.setStatus(key, text)`로 훅 상태를 게시한다: Codex는 `openai-codex` 키와 `CO` 접두어, OpenCode Go는 `opencode-go` 키와 `OC` 접두어, OpenRouter는 `openrouter` 키와 `OR` 접두어를 사용한다. omp는 이를 어디에 그릴지를 설정으로 결정한다:
+조회 플러그인의 원래 출력 키는 `openai-codex`·`opencode-go`·`openrouter`다. 현재 `omp-usage-row`는 이 출력을 고정 순서로 합쳐 **`usage-row` 키 하나**로 게시한다. 조회·인증·갱신 주기·오류 표식은 원본 코드가 담당한다.
 
-| 세그먼트 목록에 `status` | `showHookStatus` | 렌더 결과 |
-|---|---|---|
-| 있음 | `false` | 상태줄 한 줄에 모든 훅 상태를 ` · `로 이어 붙임 |
-| **없음** | `true` (기본값) | 상태줄 아래로 **키마다 한 행** — 플러그인별로 줄이 갈라져 보임 |
+| 구성 | `status` 세그먼트 | `showHookStatus` | 렌더 결과 |
+|---|---|---|---|
+| 현재: 통합 확장만 활성 | 없음 | `true` | 첫째 줄 기본 상태 + 둘째 줄 CO·OC·OR |
+| 원본 3종 직접 활성 | 없음 | `true` | 기본 상태 아래 플러그인마다 한 행 |
+| 이전 한 줄 구성 | 있음 | `false` | 기본 상태와 모든 사용량을 같은 행에 표시 |
 
 진단 표:
 
 | 증상 | 원인 | 조치 |
 |---|---|---|
-| 플러그인별로 한 줄씩 내려감 | `status`가 `leftSegments`/`rightSegments`에 없고 `showHookStatus: true` | §2 블록 적용 |
-| 값이 아예 안 보임 | `preset`이 `custom`이 아니거나 `status` 누락, 또는 자격증명 없음 | `omp config get`, `/login <provider>` |
-| 밸런스가 입력창 **위**로 감 | `composer.shape: claude`에서 `rightSegments`는 입력창 위 꼬리줄에 그려짐 | `status`를 `leftSegments`에 유지 |
+| 플러그인별로 한 줄씩 내려가거나 중복됨 | 원본 조회 플러그인도 자동 로드됨 | §1-5처럼 `omp-usage-row`만 활성화하고 원본 3종은 비활성화 |
+| 값이 아예 안 보임 | 통합 확장 비활성·원본 설치 누락·인증 없음·`showHookStatus: false` | `omp plugin list`, 확장 오류 메시지, §2 설정과 `/login <provider>` 확인 |
+| 값이 입력창 위에 나오거나 첫째 줄에도 중복됨 | 세그먼트 목록에 `status`가 남음 | 양쪽 목록에서 `status`를 빼고 §2 적용 |
 | 값 끝에 `?` | 플러그인 갱신 실패. 마지막 확인 값이므로 최신 사용량으로 보장되지 않음 | 로그에서 `codex-usage:`, `opencode-go-usage:`, `openrouter-credits:` 확인 |
 | `🎯`가 안 보임 | 세그먼트 집계의 `cacheRead`가 0이면 숨겨짐 | 요청 횟수가 아니라 실제 캐시 읽기 발생 여부 확인. 두 번째 요청에도 숨겨질 수 있음 |
 | 아이콘이 💾 그대로 | 커스텀 테마 미적용(오타·JSON 오류 → `dark` 폴백) | `omp config get theme.dark`, `omp gallery --segment cache_hit --plain` |
@@ -455,8 +469,9 @@ Windows 18.11.1 기록: capabilities가 `win32` + `capture`/`input`/`ax` 전부 
 
 추가 함정:
 
-- 좁은 터미널에서는 이 한 줄이 **줄바꿈되지 않고 잘린다**. 줄이 갈라져 보이면 폭이 아니라 위 표의 첫 줄을 의심한다.
-- 밸런스를 자기 행에 두고 싶으면 반대로 하면 된다: `status`를 빼고 `showHookStatus: true` 유지.
+- 둘째 줄도 터미널 폭보다 길면 **잘리며 자동 줄바꿈하지 않는다**. 정상 수치의 세 그룹은 80열에서 모두 확인했다. 긴 수치·오류 표식 또는 더 좁은 창에서는 끝이 잘릴 수 있다.
+- 다른 확장이 훅 상태를 게시하면 추가 행이 생길 수 있다. 이 확장은 세 사용량 플러그인만 합친다.
+- 이전 한 줄 구성으로 되돌리려면 `omp plugin disable omp-usage-row`, 원본 3종 각각 `omp plugin enable <이름>` 실행 후 `leftSegments` 끝에 `status`를 복원하고 `showHookStatus: false`로 바꾼다. 설치된 원본이나 인증을 삭제할 필요는 없다.
 - 설정·테마 변경 후에는 omp를 재시작한다(세그먼트 목록과 테마는 시작 시 로드).
 
 ---
@@ -483,11 +498,14 @@ omp plugin install github:pawprint0706/omp-opencode-go-usage
 omp plugin install github:pawprint0706/omp-openrouter-credits
 ```
 
+이어서 가이드 저장소 루트에서 `omp plugin install .`을 실행하고, §1-5의 세 `disable` 명령으로 원본 자동 로딩을 끈다. 소스 파일을 따로 복사하지 않는다.
+
 6. 다음 CLI 검증을 실행한다:
 
 ```sh
-omp plugin list                                # Codex·OpenCode·OpenRouter 3종 활성 확인
+omp plugin list                                # omp-usage-row 활성, 조회 원본 3종 비활성
 omp config get statusLine.leftSegments
+omp config get statusLine.showHookStatus        # true
 omp config get statusLine.compactThinkingLevel  # false
 omp config get theme.dark                      # titanium-custom
 omp config get spelling.autocomplete           # off
@@ -498,13 +516,14 @@ omp gallery --segment status --plain --width 200
 omp gallery --segment cache_hit --plain --width 200
 ```
 
-7. omp를 다시 실행해 실제 TUI에서 `CO`·`OC`·`OR` 그룹을 확인한다(각 인증 필요). 기존 한 줄 배치는 그대로 유지한다. 좁은 터미널에서는 오른쪽 그룹이 잘릴 수 있으므로 검증 시 폭을 충분히 확보한다. 🎯는 캐시 읽기가 없으면 숨겨지므로 갤러리 결과와 구분한다.
+7. omp를 다시 실행해 실제 TUI에서 **첫째 줄 비용 표시 바로 아래 한 행에 `π · CO … · OC … · OR …`가 나오는지** 확인한다(각 인증 필요). 두 `π`는 두 번째 열에 정렬되고, 둘째 줄 첫 `·`와 사용량 전체는 윗줄 기본 구분자와 같은 회색이어야 한다. 세 그룹 사이에는 줄바꿈하지 않는다. 둘째 줄 자체보다 창이 좁으면 끝이 잘리므로 폭도 확인한다. 🎯는 캐시 읽기가 없으면 숨겨지므로 갤러리 결과와 구분한다.
 8. §4의 Eval 스모크로 브라우저를 먼저 연다. 관리형 headless Chromium을 사용한 경우 같은 프로젝트의 CLI에서 `omp ps`로 데몬을 추가 확인한다.
 
 ### 백업 목적을 구분한다
 
 - **설정만 재현:** `config.yml`, `themes/`, `RULES.md`, `~/.omp/plugins/package.json`과 플러그인 잠금 파일(`omp-plugins.lock.json`), 별도로 안전하게 내보낸 인증을 보관한다. 사용하는 프로필별로 필요한 파일·인증을 챙긴다. 이 목록만으로 이전 대화·사용량 이력까지 복원되지는 않는다.
 - **로컬 연결 플러그인:** 설치 목록이나 `package.json`만으로는 원본 프로젝트가 복구되지 않는다. `omp plugin list --json`으로 설치 경로를 확인하고, 링크 대상 소스의 저장소·리비전·로컬 변경을 별도로 보존한다. 새 PC에서는 원본을 복원해 다시 연결하거나 위 GitHub 설치 명령을 사용한다. 심볼릭 링크만 백업하고 실제 소스를 빠뜨리지 않는다.
+- **사용량 행 확장:** 이 가이드 저장소의 `package.json`과 `extensions/usage-row.ts`도 함께 보존한다. 문서 하나만 복사해서는 두 줄 레이아웃이 복원되지 않는다. 복구 시 §1-5의 연결·비활성화 절차까지 실행한다.
 - **대화·이력까지 보존:** `sessions/`와 필요한 DB도 백업 대상이다. 실제 18.11.2의 `agent.db`에는 `auth_credentials`, `settings`, `usage_history` 등의 테이블이 있으므로 **`*.db`를 모두 폐기 가능한 캐시로 취급하지 않는다.** 로그 보존 여부는 진단 필요와 민감정보 보관 정책에 따라 결정한다.
 - **전체 백업:** 관련 omp 프로세스·데몬을 정상 종료한 뒤 `~/.omp`와 사용하는 프로필 데이터를 암호화된 저장소에 일관된 스냅샷으로 보관한다. 실행 중 SQLite의 `.db`만 복사하면 WAL에 남은 변경을 놓칠 수 있으므로, 실행 중 백업이 필요하면 SQLite 백업 기능 등 일관성을 보장하는 방식을 사용한다. DB에는 자격증명이 포함될 수 있다.
 - **재설치와 삭제는 별개:** 바이너리 재설치는 사용자 데이터를 지우는 작업이 아니다. 재설치를 이유로 `~/.omp`, DB, 세션을 일괄 삭제하지 않는다. 전체 백업의 다른 OS·다른 버전 복원은 별도 호환성 확인이 필요하다.
@@ -551,7 +570,7 @@ omp gallery --segment cache_hit --plain --width 200
 - 실제 컴퓨터 제어 검증: 계산기 창의 화면 캡처·접근성 트리 읽기에 성공했고, 접근성 버튼으로 `123 + 456 = 579`, 네이티브 키보드 입력으로 `7 × 8 = 56`을 계산해 화면·접근성 값으로 확인했다. macOS에서 `press('*')`는 키코드로 지원되지 않으므로 `press('shift+8')`을 사용했다.
 - 실제 브라우저 제어 검증: 관리형 Chromium에서 `example.com` 제목·페이지를 읽고, 독립 테스트 페이지에 `맥OS 브라우저 제어 정상`을 입력한 뒤 확인 버튼을 클릭해 `확인: 맥OS 브라우저 제어 정상` 표시와 화면 캡처를 확인했다. 테스트 탭은 닫았으며 기존 문서·로그인된 브라우저 탭은 변경하지 않았다.
 - 테마·상태줄과 새 플러그인을 현재 대화에도 확실히 반영하려면 omp를 종료 후 다시 실행한다. 전역 규칙은 새 세션 또는 `/new`·`/clear`에서 다시 읽는다.
-- 최종 표기는 §0의 예시와 같다. `compactThinkingLevel: false`와 §3의 전체 오버라이드로 6단계 effort를 단어로 표시하고 모델 아이콘을 제거했다. `off`는 공유 비활성 표식을 보존하기 위해, 미해결 `auto`는 글리프 제거 시 남는 고정 공백을 피하기 위해 기본 글리프를 유지하기로 했다. 이 제한은 18.11.2의 현재 설정·테마 방식에 관한 것이며 코드 수정까지 불가능하다는 뜻은 아니다.
+- 모델·effort 표기는 현재 §0 예시에도 유지된다. `compactThinkingLevel: false`와 §3의 전체 오버라이드로 6단계 effort를 단어로 표시하고 모델 아이콘을 제거했다. 당시 사용량은 한 줄 구성이었으며 최신 두 줄 구성은 §11을 따른다. `off`는 공유 비활성 표식을 보존하기 위해, 미해결 `auto`는 글리프 제거 시 남는 고정 공백을 피하기 위해 기본 글리프를 유지하기로 했다. 이 제한은 18.11.2의 설정·테마 방식에 관한 것이며 코드 수정까지 불가능하다는 뜻은 아니다.
 
 ---
 
@@ -600,3 +619,29 @@ omp gallery --segment cache_hit --plain --width 200
 
 - 기존 두 플러그인 사이 구분 방식과 동일하게 각 사용량 그룹은 ` | `, 그룹 사이는 ` · `로 표시됐다. 넓은 PTY에서는 세 그룹이 모두 보였으며, 좁은 화면은 오른쪽이 잘릴 수 있다.
 - 검증용 omp 프로세스는 종료했다. 이미 실행 중인 세션에서 새 플러그인·접두어가 보이지 않으면 omp를 재시작한다. §8·§9는 변경 전 2종 구성의 과거 검증 기록으로 보존하며, 이번 Codex 추가·OC 접두어 구성의 Windows 실동작은 아직 재검증하지 않았다.
+
+---
+
+## 11. 사용량을 둘째 줄 하나로 분리 (2026-10-17)
+
+- **macOS Apple Silicon, omp 18.11.3**에서 적용했다. 원본 조회 플러그인 소스·인증·모델·테마는 변경하지 않았다.
+- 이 저장소를 로컬 `omp-usage-row@1.0.0` 플러그인으로 연결했다. 원본 3종은 설치 상태를 유지하고 자동 로딩만 껐다. 통합 확장이 원본 조회 함수를 실행하며, 결과는 CO → OC → OR 순서로 ` · `로 합쳐 한 훅으로 게시한다. 세 그룹 사이에 줄바꿈 문자는 넣지 않는다.
+- `leftSegments` 끝의 `status`를 제거하고 `showHookStatus: true`로 바꿨다. 그 외 첫째 줄의 `cache_hit`·`cost`, 컴포저와 세그먼트 옵션은 유지했다.
+- 실제 `omp --no-session --no-title`을 **120열과 80열 PTY**에서 각각 실행했다. 두 폭 모두 첫째 줄의 `(sub)` 바로 다음 행에 아래 세 그룹이 모두 표시됐고 확장 로딩 오류가 없었다. 사용률·잔액은 조회 시점 값이다:
+
+```text
+π · GPT-6 Astra · high · 📁 …p-setup-guide · ⑂ main ?2 · ◫ 3.0%/272K ⟲ · (sub)
+CO 5h 49% | Wk 8% · OC 5h 0% | Wk 2% | Mo 1% · OR $4.65
+```
+
+- 모델 프롬프트를 보내지 않아 새 검증 세션에는 캐시 읽기 값이 없었다. 🎯는 숨겨졌고, Codex 구독 모델의 지출 표시는 달러액 대신 기존 `(sub)`였다. 캐시·지출액 계산 로직은 변경하지 않았다.
+- 검증 프로세스는 모두 종료했다. 현재 열린 omp에는 기존 확장이 남아 있으므로 **종료 후 다시 실행**해야 새 로딩 구성이 적용된다. Windows 실행은 아직 검증하지 않았으며 §8–10은 당시 레이아웃의 과거 기록으로 보존한다.
+
+### Pi 배지·정렬·색상 변경 이력 (최종: 구분자와 같은 회색)
+
+- `extensions/usage-row.ts`에서 `ctx.ui.theme.icon.omp`와 `theme.fg()`를 사용한다. 배지는 `dim`이며, CO·OC·OR에 처음 적용했던 `statusLineModel` 강조색은 아래 회색 변경으로 대체했다. 모든 조회 값이 없으면 배지만 남기지 않고 행 전체를 숨긴다.
+- macOS omp 18.11.3의 80열·120열 실제 TUI에서 `π · CO … · OC … · OR …`가 같은 둘째 행에 표시되는 것을 확인했다. 터미널 셀의 전경색을 비교해 세 사용량 그룹과 당시 모델명 `GPT-6.1 Sol` 모두 `#00b4ff`, 두 행의 `π` 배지도 같은 색임을 확인했다. 기존 모델 선택은 변경하지 않았다.
+- 좌측 정렬: 기본 훅 상태는 앞쪽 일반 공백을 제거하므로, 둘째 줄 앞에 한 칸 폭의 빈 문자 `U+2800`을 넣어 `claude` 컴포저의 첫째 줄 들여쓰기와 맞췄다. 80열·120열 실제 TUI에서 두 `π`가 모두 **두 번째 열**에 놓이는 것과 강조색·CO/OC/OR의 동일 행 유지도 확인했다. 이 들여쓰기는 현재 `composer.shape: claude` 기준이다.
+- `π` 바로 뒤 첫 구분자 `·`는 기본 글자색이 아닌 `statusLineSep`로 칠해 윗줄과 통일했다. 80열 실제 TUI의 셀 색상을 비교해 두 구분자가 모두 `#2a3038`, 굵게 표시하지 않는 상태임을 확인했다. 배지 정렬과 사용량 강조색은 유지했다.
+- 최종 색상 조정: 사용량 강조색이 너무 눈에 띈다는 피드백에 따라 CO·OC·OR 전체를 첫 구분자와 같은 `statusLineSep`로 변경했다. 80열 실제 TUI에서 사용량의 모든 문자·수치·구분자가 윗줄 첫 `·`와 같은 `#2a3038`인 것을 확인했다. `π`의 색상·두 번째 열 정렬·세 그룹의 동일 행 배치는 유지했다.
+- 이 검증에서도 모델 요청은 보내지 않았고 검증 프로세스는 종료했다. 적용에는 omp 재시작이 필요하다.
