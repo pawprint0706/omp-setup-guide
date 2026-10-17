@@ -1,9 +1,9 @@
 # omp 셋업 가이드 (Windows · macOS)
 
-기본 프로필의 설정을 재설치 후 복구하기 위한 가이드. §1–7은 공통 설정과 OS별 절차, §8은 macOS, §9는 Windows 적용·검증 기록이다.
+기본 프로필의 설정을 재설치 후 복구하기 위한 가이드. §1–7은 공통 설정과 OS별 절차, §8은 macOS, §9는 Windows 적용·검증 기록이다. §10은 Codex 사용량 추가와 OpenCode 접두어 적용 기록이다.
 
-- **현재 복구 기준:** Windows 10 x64·macOS Apple Silicon, omp **18.11.2**. 한 줄 상태줄, 🎯 캐시 아이콘, effort 문자열 표시, 모델 아이콘 제거, 플러그인 2종, 전역 규칙, Eval 프렐류드, 입력 단어 자동완성 off.
-- **Windows 재검증:** Windows 10 x64, Git Bash, omp **18.11.2**에서 최신 공통 설정을 적용했다. 기존 모델 `openai-codex/gpt-6-astra:high`와 인증은 유지했고, effort·모델 아이콘·상태줄·브라우저·데스크톱 동작을 확인했다(§9). 18.11.1 검증은 §4의 과거 기록으로 구분한다.
+- **현재 복구 구성:** 한 줄 상태줄, 🎯 캐시 아이콘, effort 문자열 표시, 모델 아이콘 제거, **플러그인 3종(Codex·OpenCode Go 사용률, OpenRouter 잔액)**, 전역 규칙, Eval 프렐류드, 입력 단어 자동완성 off. 기존 공통 설정은 Windows 10 x64·macOS Apple Silicon의 omp 18.11.2에서 검증했고, 3종 상태줄은 **macOS omp 18.11.3**에서 확인했다(§10).
+- **Windows 재검증:** Windows 10 x64, Git Bash, omp **18.11.2**에서 당시 2종 플러그인 구성을 적용했다. 기존 모델 `openai-codex/gpt-6-astra:high`와 인증을 유지하고 effort·모델 아이콘·상태줄·브라우저·데스크톱 동작을 확인했다(§9). 18.11.1 검증은 §4의 과거 기록이며, §10의 Codex 추가·OC 접두어 변경은 Windows에서 별도로 재검증하지 않았다.
 - 모델·프로바이더·인증은 기존 값을 유지한다. 아래 DeepSeek 모델명과 사용량·잔액은 표시 예시이며 고정 설정값이 아니다.
 
 작성: 2026-10-15, 갱신: 2026-10-17.
@@ -13,15 +13,18 @@
 하단 상태줄이 **한 줄**이고, 모델 아이콘 없이 모델명 뒤에 effort 단어가 표시된다. 캐시 히트율은 🎯, 플러그인 값은 ` · `로 이어져 끝에 붙는다. 최종 설정의 표시 예시:
 
 ```
-π · DeepSeek V4.1 Flash · high · 📁 omp-setup-guide · ◫ 0.9%/1M ⟲ · 🎯 49.17% · $0.00 · 5h 2% | Wk 0% | Mo 0% · OR $4.89
+π · DeepSeek V4.1 Flash · high · 📁 omp-setup-guide · ◫ 0.9%/1M ⟲ · 🎯 49.17% · $0.00 · CO 5h 22% | Wk 19% · OC 5h 2% | Wk 0% | Mo 0% · OR $4.89
 ```
 
 | 조각 | 출처 |
 |---|---|
 | `◫ 0.9%/1M ⟲` | 내장 `context_pct` 세그먼트 |
 | `🎯 49.17%` | 내장 `cache_hit` 세그먼트 + 커스텀 테마의 아이콘 오버라이드 (§3) |
-| `5h 2% \| Wk 0% \| Mo 0%` | 플러그인 `omp-opencode-go-usage` |
+| `CO 5h 22% \| Wk 19%` | 플러그인 `omp-codex-usage` — Codex 구독 사용률 |
+| `OC 5h 2% \| Wk 0% \| Mo 0%` | 플러그인 `omp-opencode-go-usage` — OpenCode Go 사용률 |
 | `OR $4.89` | 플러그인 `omp-openrouter-credits` |
+
+`CO`·`OC`는 **사용한 비율**(남은 비율 아님), `OR`는 계정 잔액이다. 그룹 내부는 ` | `, 플러그인 그룹 사이는 ` · `로 구분한다. Codex는 기본 플랜의 실제 기간만 표시하므로 주간 전용 플랜에서는 `CO Wk …%`만 보이며 월간 한도를 만들어 표시하지 않는다. 인증이 없거나 최초 조회에 실패한 그룹은 숨겨질 수 있다.
 
 ---
 
@@ -56,9 +59,12 @@ macOS 신규 설치 명령은 이 환경에서 재실행하지 않았다. 기존
 ### 2) 자격증명
 
 ```powershell
+omp login openai-codex  # Codex 구독 OAuth — 이미 로그인되어 있으면 생략
 omp login opencode-go
 omp login openrouter
 ```
+
+Codex 플러그인은 기존 `openai-codex` OAuth를 사용하며 별도의 키·토큰 저장소를 만들지 않는다. `OPENAI_API_KEY`는 Codex 구독 인증의 대체재가 아니다. 여러 계정이 있으면 전체 합계가 아니라 omp가 해당 세션에 선택한 계정의 사용률이다. 현재 모델을 Codex로 바꾸지 않아도 해당 인증이 있으면 조회할 수 있다.
 
 또는 TUI에서 `/login <provider>`. 기존 PC에서 옮길 때는 **기존 PC에서 export**, **새 PC에서 import**한다. 다음 중 해당 OS의 내보내기 명령 하나만 사용한다.
 
@@ -93,18 +99,23 @@ omp auth import credentials.json
 
 🎯 캐시 아이콘·effort 문자열·모델 아이콘 제거용. §3에서 OS에 맞게 내장 테마를 복사하고 **전체 오버라이드 블록**을 병합한다. 이미 맞춰둔 PC가 있으면 완성된 테마 파일을 복사해도 된다.
 
-### 5) 플러그인 2종
+### 5) 플러그인 3종
 
 ```powershell
+omp plugin install github:pawprint0706/omp-codex-usage
 omp plugin install github:pawprint0706/omp-opencode-go-usage
 omp plugin install github:pawprint0706/omp-openrouter-credits
-omp plugin list                      # ● 로 enabled 2개 확인
+omp plugin list                      # ● 로 enabled 3개 확인
 ```
 
-- 로컬 클론이 있으면 `omp plugin install <경로>` (junction/symlink로 걸림).
-- 플러그인이 같이 배포하는 `statusline.yml`은 **참고용 블록이며 omp가 자동 병합하지 않는다** — §2의 `statusLine` 블록이 그 역할을 한다.
+- 로컬 클론이 있으면 `omp plugin install <경로>`로 연결할 수 있다(junction/symlink). 같은 플러그인을 수동 extension 복사와 플러그인 설치로 중복 로드하지 않는다. 로컬 연결은 원본 프로젝트의 변경을 반영하므로 새 omp 세션에서 확인한다.
+- 플러그인이 배포하는 `statusline.yml`은 **참고용이며 자동 병합되지 않는다**. 현재 §2의 `preset: custom`, `leftSegments` 끝의 `status`, `showHookStatus: false`면 3종 모두 같은 하단 행에 표시된다. `CO`·`OC`·`OR`는 플러그인 문자열의 접두어이지 `leftSegments`에 추가할 별도 세그먼트가 아니다. 플러그인 예제 목록으로 기존 테마·`cache_hit`·`segmentOptions`를 덮어쓰지 않는다.
 - Windows 과거 설치 커밋(참고): `omp-opencode-go-usage#fda9a4e`, `omp-openrouter-credits#a302954`. 재설치는 브랜치 최신을 받으므로 이 커밋과 같다고 보장하지 않는다.
 - 플러그인 자체 설명서: `~/.omp/plugins/node_modules/<name>/README.md`.
+- OpenCode의 `OC` 접두어는 테마 설정이 아니라 플러그인 코드 변경이다. 예전 GitHub 설치본이면 `omp plugin upgrade omp-opencode-go-usage`로 갱신하고, 로컬 연결이면 원본 프로젝트의 해당 변경을 반영한다. 버전이 동일한 `1.0.0`이어도 코드가 다를 수 있으므로 버전 문자열만으로 접두어 적용을 판단하지 않는다.
+- **18.11.3의 갱신 주의:** `omp plugin upgrade omp-opencode-go-usage --dry-run`이 실제로 설치본을 갱신하고 로컬 링크를 GitHub 설치본으로 교체하는 동작을 관찰했다. 이 명령의 `--dry-run`을 무변경 검사로 사용하지 않는다. 로컬 연결은 원본 프로젝트를 관리하고, 링크가 바뀌면 `omp plugin install <원래 로컬 경로>`로 다시 연결한다.
+- 설치·갱신 후 omp를 다시 실행해 실제 상태줄을 확인한다. Codex·OpenCode는 시작 시, 턴 종료 시, 90초 주기로 조회한다. 기존 로그인·모델·승인 정책은 유지한다.
+- 플러그인 설명서: [Codex](https://github.com/pawprint0706/omp-codex-usage), [OpenCode Go](https://github.com/pawprint0706/omp-opencode-go-usage), [OpenRouter](https://github.com/pawprint0706/omp-openrouter-credits).
 
 ### 6) Eval 프렐류드 (computer-use / browser-use)
 
@@ -127,7 +138,7 @@ omp config get theme.dark                 # titanium-custom
 omp config get spelling.autocomplete      # off
 omp config get computer.enabled           # true
 omp config get browser.enabled            # true
-omp plugin list                           # ● 2개
+omp plugin list                           # ● 3개
 
 omp gallery --segment status --plain --width 200      # 훅 상태가 ' · '로 이어진 형태
 omp gallery --segment cache_hit --plain --width 200   # 🎯 77.92%  ← 아이콘 오버라이드 확인
@@ -136,6 +147,8 @@ omp                                                   # 실제 TUI 확인 후 §
 ```
 
 `omp gallery`는 자격증명 없이 세그먼트 렌더만 결정적으로 확인하는 도구다(`status`는 `Indexer ready · Tests passing`처럼 이어 붙여, `cache_hit`은 현재 테마의 아이콘으로 그린다). 두 프렐류드가 실제로 동작하는지는 Eval에서 확인한다 — §4.
+
+사용량 플러그인 검증은 실제 TUI에서 `CO`·`OC`·`OR`를 확인한다. `status` 갤러리는 샘플 훅 문자열을 렌더링할 뿐, 세 플러그인의 인증이나 API 조회 성공을 증명하지 않는다.
 
 `omp ps`는 §4의 `browser.open()` 이후에 확인한다. 첫 사용 전에는 브라우저 데몬이 없어도 정상이다. 🎯는 실제 캐시 읽기가 있을 때만 표시되므로 첫 TUI 화면에 없다고 실패로 판단하지 않는다.
 
@@ -418,7 +431,7 @@ Windows 18.11.1 기록: capabilities가 `win32` + `capture`/`input`/`ax` 전부 
 
 ## 5. 왜 이 설정이 필요한가 (증상 재발 시 진단)
 
-두 플러그인 모두 `ctx.ui.setStatus(key, text)`로 훅 상태(`opencode-go`, `openrouter`)를 게시한다. omp는 이걸 어디에 그릴지를 설정으로 결정한다:
+세 플러그인은 `ctx.ui.setStatus(key, text)`로 훅 상태를 게시한다: Codex는 `openai-codex` 키와 `CO` 접두어, OpenCode Go는 `opencode-go` 키와 `OC` 접두어, OpenRouter는 `openrouter` 키와 `OR` 접두어를 사용한다. omp는 이를 어디에 그릴지를 설정으로 결정한다:
 
 | 세그먼트 목록에 `status` | `showHookStatus` | 렌더 결과 |
 |---|---|---|
@@ -432,10 +445,13 @@ Windows 18.11.1 기록: capabilities가 `win32` + `capture`/`input`/`ax` 전부 
 | 플러그인별로 한 줄씩 내려감 | `status`가 `leftSegments`/`rightSegments`에 없고 `showHookStatus: true` | §2 블록 적용 |
 | 값이 아예 안 보임 | `preset`이 `custom`이 아니거나 `status` 누락, 또는 자격증명 없음 | `omp config get`, `/login <provider>` |
 | 밸런스가 입력창 **위**로 감 | `composer.shape: claude`에서 `rightSegments`는 입력창 위 꼬리줄에 그려짐 | `status`를 `leftSegments`에 유지 |
-| 값 끝에 `?` | 플러그인 갱신 실패(오프라인/429/5xx). 마지막 확인 값 유지 | `~/.omp/logs/omp.*.log`에서 `openrouter-credits:` / 갱신 재시도 |
+| 값 끝에 `?` | 플러그인 갱신 실패. 마지막 확인 값이므로 최신 사용량으로 보장되지 않음 | 로그에서 `codex-usage:`, `opencode-go-usage:`, `openrouter-credits:` 확인 |
 | `🎯`가 안 보임 | 세그먼트 집계의 `cacheRead`가 0이면 숨겨짐 | 요청 횟수가 아니라 실제 캐시 읽기 발생 여부 확인. 두 번째 요청에도 숨겨질 수 있음 |
 | 아이콘이 💾 그대로 | 커스텀 테마 미적용(오타·JSON 오류 → `dark` 폴백) | `omp config get theme.dark`, `omp gallery --segment cache_hit --plain` |
 | 커스텀 테마가 무시됨 | `colors` 필수 토큰 누락 또는 JSON 오류 | §3의 내장 테마 복사부터 다시 |
+| Codex `CO` 그룹이 안 보임 | Codex OAuth가 없거나 최초 조회 실패, 또는 인증을 사용할 수 없는 상태 | `/login openai-codex`, `codex-usage:` 로그 확인. 로그인 후 다음 90초 갱신·턴 종료 또는 재시작으로 확인 |
+| OpenCode 사용률 앞에 `OC`가 없음 | 접두어 변경 이전 플러그인 코드가 로드됨 | §1-5의 설치 방식별 갱신 후 omp 재시작. `1.0.0` 표시만으로 최신 코드 여부를 판단하지 않음 |
+| CO·OC의 항목 끝에 `!` | 사용 한도 소진 또는 API 제한 판정 | 단순 조회 실패(`?`)와 구분. Codex의 표식은 유료 크레딧으로 계속 사용 가능한지까지 뜻하지 않음 |
 
 추가 함정:
 
@@ -462,6 +478,7 @@ Windows 18.11.1 기록: capabilities가 `win32` + `capture`/`input`/`ax` 전부 
 5. 다음 플러그인 설치 명령을 실행한다(두 OS 공통):
 
 ```sh
+omp plugin install github:pawprint0706/omp-codex-usage
 omp plugin install github:pawprint0706/omp-opencode-go-usage
 omp plugin install github:pawprint0706/omp-openrouter-credits
 ```
@@ -469,7 +486,7 @@ omp plugin install github:pawprint0706/omp-openrouter-credits
 6. 다음 CLI 검증을 실행한다:
 
 ```sh
-omp plugin list
+omp plugin list                                # Codex·OpenCode·OpenRouter 3종 활성 확인
 omp config get statusLine.leftSegments
 omp config get statusLine.compactThinkingLevel  # false
 omp config get theme.dark                      # titanium-custom
@@ -481,12 +498,13 @@ omp gallery --segment status --plain --width 200
 omp gallery --segment cache_hit --plain --width 200
 ```
 
-7. omp를 다시 실행해 실제 TUI를 확인한다. 🎯는 캐시 읽기가 없으면 숨겨지므로 갤러리 결과와 구분한다.
+7. omp를 다시 실행해 실제 TUI에서 `CO`·`OC`·`OR` 그룹을 확인한다(각 인증 필요). 기존 한 줄 배치는 그대로 유지한다. 좁은 터미널에서는 오른쪽 그룹이 잘릴 수 있으므로 검증 시 폭을 충분히 확보한다. 🎯는 캐시 읽기가 없으면 숨겨지므로 갤러리 결과와 구분한다.
 8. §4의 Eval 스모크로 브라우저를 먼저 연다. 관리형 headless Chromium을 사용한 경우 같은 프로젝트의 CLI에서 `omp ps`로 데몬을 추가 확인한다.
 
 ### 백업 목적을 구분한다
 
 - **설정만 재현:** `config.yml`, `themes/`, `RULES.md`, `~/.omp/plugins/package.json`과 플러그인 잠금 파일(`omp-plugins.lock.json`), 별도로 안전하게 내보낸 인증을 보관한다. 사용하는 프로필별로 필요한 파일·인증을 챙긴다. 이 목록만으로 이전 대화·사용량 이력까지 복원되지는 않는다.
+- **로컬 연결 플러그인:** 설치 목록이나 `package.json`만으로는 원본 프로젝트가 복구되지 않는다. `omp plugin list --json`으로 설치 경로를 확인하고, 링크 대상 소스의 저장소·리비전·로컬 변경을 별도로 보존한다. 새 PC에서는 원본을 복원해 다시 연결하거나 위 GitHub 설치 명령을 사용한다. 심볼릭 링크만 백업하고 실제 소스를 빠뜨리지 않는다.
 - **대화·이력까지 보존:** `sessions/`와 필요한 DB도 백업 대상이다. 실제 18.11.2의 `agent.db`에는 `auth_credentials`, `settings`, `usage_history` 등의 테이블이 있으므로 **`*.db`를 모두 폐기 가능한 캐시로 취급하지 않는다.** 로그 보존 여부는 진단 필요와 민감정보 보관 정책에 따라 결정한다.
 - **전체 백업:** 관련 omp 프로세스·데몬을 정상 종료한 뒤 `~/.omp`와 사용하는 프로필 데이터를 암호화된 저장소에 일관된 스냅샷으로 보관한다. 실행 중 SQLite의 `.db`만 복사하면 WAL에 남은 변경을 놓칠 수 있으므로, 실행 중 백업이 필요하면 SQLite 백업 기능 등 일관성을 보장하는 방식을 사용한다. DB에는 자격증명이 포함될 수 있다.
 - **재설치와 삭제는 별개:** 바이너리 재설치는 사용자 데이터를 지우는 작업이 아니다. 재설치를 이유로 `~/.omp`, DB, 세션을 일괄 삭제하지 않는다. 전체 백업의 다른 OS·다른 버전 복원은 별도 호환성 확인이 필요하다.
@@ -565,3 +583,20 @@ omp gallery --segment cache_hit --plain --width 200
 - 브라우저 사용 후 `omp ps`에서 `omp.browser.headless`가 `ready`였고, 실행 파일은 기존 `C:\Program Files\Google\Chrome\Application\chrome.exe`였다. 로그인된 사용자 브라우저 탭이나 relay는 사용하지 않았다.
 - 테스트용 계산기 창과 브라우저 탭만 닫고 목록에서 사라진 것을 확인했다. 데스크톱 제어 세션도 종료했다. 기존 문서·클립보드·로그인 상태는 변경하지 않았다.
 - 현재 실행 중인 omp의 테마·상태줄에도 확실히 반영하려면 종료 후 다시 실행한다. 설정·테마·전역 규칙은 사용자 디렉터리에 있고, 저장소에는 이 검증 기록만 반영한다.
+
+---
+
+## 10. Codex 사용량·OC 접두어 추가 확인 (2026-10-17)
+
+- **macOS Apple Silicon, omp 18.11.3**에서 3종 상태줄을 검증했다. 이번 작업에서는 omp 바이너리·모델·인증·테마·승인 정책을 변경하지 않았다.
+- 확인 시점에 `omp-codex-usage@1.0.0`, `omp-opencode-go-usage@1.0.0`, `omp-openrouter-credits@1.0.0`이 이미 활성화돼 있었다. Codex와 OpenCode는 각각 `~/Projects/omp-codex-usage`, `~/Projects/omp-opencode-go-usage`로 연결된 로컬 플러그인이었다. Codex는 재설치하지 않았다. OpenCode는 갱신 명령의 `--dry-run` 확인 중 링크가 실제 설치본으로 교체되어, 원래 로컬 경로를 `omp plugin install`로 다시 연결했다. 원본 프로젝트 코드는 수정하지 않았다.
+- 설치된 코드에서 Codex의 `CO`와 OpenCode의 `OC` 접두어를 확인했다. Codex 플러그인은 기존 OAuth로 기본 플랜 사용률을 조회한다. 추가 모델별 한도·코드 리뷰·유료 크레딧·저장된 리셋 횟수는 이 미터에 합산하지 않는다.
+- 기존 `composer.shape: claude`, `preset: custom`, `leftSegments` 끝의 `status`, `rightSegments: [session_name]`, `showHookStatus: false`를 유지했다. 새 세그먼트나 별도 상태 행은 추가하지 않았다.
+- 240열 PTY에서 실제 `omp --no-session --no-title`을 실행해 아래 **한 줄** 출력을 캡처했다. 모델 프롬프트는 전송하지 않았으며, 사용률·잔액은 조회 시점 값이다:
+
+```text
+π · GPT-6 Astra · high · 📁 omp-setup-guide · ⑂ main · ◫ 3.0%/272K ⟲ · (sub) · CO 5h 70% | Wk 27% · OC 5h 0% | Wk 2% | Mo 1% · OR $4.65
+```
+
+- 기존 두 플러그인 사이 구분 방식과 동일하게 각 사용량 그룹은 ` | `, 그룹 사이는 ` · `로 표시됐다. 넓은 PTY에서는 세 그룹이 모두 보였으며, 좁은 화면은 오른쪽이 잘릴 수 있다.
+- 검증용 omp 프로세스는 종료했다. 이미 실행 중인 세션에서 새 플러그인·접두어가 보이지 않으면 omp를 재시작한다. §8·§9는 변경 전 2종 구성의 과거 검증 기록으로 보존하며, 이번 Codex 추가·OC 접두어 구성의 Windows 실동작은 아직 재검증하지 않았다.
