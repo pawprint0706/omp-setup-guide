@@ -42,14 +42,18 @@ export default async function usageRow(pi: API): Promise<void> {
       if (!values) return; // Ignore a refresh that finishes after shutdown.
       if (text) values.set(key, text);
       else values.delete(key);
-      const row = providers.map(([provider]) => values.get(provider)).filter(Boolean).join(" · ");
       const theme = ctx.ui.theme;
+      const row = providers
+        .map(([provider]) => values.get(provider))
+        .filter((text): text is string => Boolean(text))
+        .map(text => theme.fg("dim", text))
+        .join(theme.fg("statusLineSep", " · "));
       const badge = theme.icon.omp
         ? theme.fg("dim", theme.icon.omp) + theme.fg("statusLineSep", " · ")
         : "";
       // Hook sanitization trims ordinary leading spaces. U+2800 is a blank,
       // one-cell glyph that preserves the Claude status bar's left inset.
-      ctx.ui.setStatus(statusKey, row ? "\u2800" + badge + theme.fg("statusLineSep", row) : undefined);
+      ctx.ui.setStatus(statusKey, row ? "\u2800" + badge + row : undefined);
     };
     // omp freezes its context: define own properties without writing inherited ones.
     const ui = Object.create(ctx.ui, { setStatus: { value: setStatus } });
