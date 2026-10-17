@@ -110,6 +110,12 @@ omp plugin install github:pawprint0706/omp-opencode-go-usage
 omp plugin install github:pawprint0706/omp-openrouter-credits
 ```
 
+기존 로컬 연결을 GitHub 설치본으로 교체할 때는 다음을 실행한 뒤, 아래 세 `disable` 명령을 다시 실행한다. 로컬 원본 프로젝트는 삭제하지 않는다:
+
+```sh
+omp plugin install github:pawprint0706/omp-codex-usage github:pawprint0706/omp-opencode-go-usage github:pawprint0706/omp-openrouter-credits --force
+```
+
 이 가이드 저장소의 루트에서 다음을 실행한다(Windows PowerShell·macOS 공통). `omp plugin install .`은 저장소를 로컬 플러그인으로 연결하므로 이후에도 폴더를 유지한다:
 
 ```sh
@@ -121,7 +127,7 @@ omp plugin list   # omp-usage-row만 ●, 원본 조회 플러그인 3종은 ⦸
 ```
 
 - `omp-usage-row`는 이 저장소의 `extensions/usage-row.ts`로 구현된다. 설치된 세 플러그인의 조회 함수를 그대로 실행하되 UI 출력만 `usage-row` 키 하나로 합친다. 원본 3종의 **자동 로딩만 비활성화**하며 삭제하지 않는다. 다시 활성화하면 조회·표시가 중복된다.
-- 원본 조회 플러그인은 기본 사용자 경로 `~/.omp/plugins/node_modules/<name>`에 설치한다. 다른 플러그인 루트는 이 확장의 지원 범위가 아니다. 원본이 로컬 클론이면 `omp plugin install <경로>`로 연결할 수 있지만, 설치 후 자동 로딩 비활성 상태를 다시 확인한다. 수동 extension 복사로 중복 로드하지 않는다.
+- 원본 조회 플러그인은 기본 사용자 경로 `~/.omp/plugins/node_modules/<name>`에 **GitHub 저장소에서 설치**한다. 현재 세 조회 플러그인 모두 로컬 링크가 아닌 GitHub 설치본이다. 다른 플러그인 루트는 통합 확장의 지원 범위가 아니다. 로컬 연결은 개발할 때만 선택적으로 사용하고, 수동 extension 복사로 중복 로드하지 않는다. `omp-usage-row` 자체는 이 가이드 저장소에 연결된 로컬 레이아웃 확장을 유지한다.
 - 플러그인이 배포하는 `statusline.yml`은 **참고용이며 자동 병합되지 않는다**. 현재 §2는 `leftSegments`에서 `status`를 빼고 `showHookStatus: true`를 사용한다. 합쳐진 훅 하나만 둘째 줄에 표시되며, `CO`·`OC`·`OR`는 세그먼트 이름이 아니다. 플러그인 예제로 기존 테마·`cache_hit`·`segmentOptions`를 덮어쓰지 않는다.
 - Windows 과거 설치 커밋(참고): `omp-opencode-go-usage#fda9a4e`, `omp-openrouter-credits#a302954`. 재설치는 브랜치 최신을 받으므로 이 커밋과 같다고 보장하지 않는다.
 - 원본 조회 플러그인 설명서: `~/.omp/plugins/node_modules/<name>/README.md`. `omp-usage-row`의 설치·복구 설명서는 이 가이드다.
@@ -646,3 +652,9 @@ CO 5h 49% | Wk 8% · OC 5h 0% | Wk 2% | Mo 1% · OR $4.65
 - 이전 회색 조정: 사용량 강조색이 너무 눈에 띈다는 피드백에 따라 CO·OC·OR 전체를 첫 구분자와 같은 `statusLineSep`로 변경했다. 당시 80열 실제 TUI에서 사용량의 모든 문자·수치·구분자가 윗줄 첫 `·`와 같은 `#2a3038`인 것을 확인했다. 이후 macOS 터미널에서 너무 희미하다는 피드백으로 아래 최종 설정으로 대체했다.
 - 최종 색상: 사용량 텍스트·숫자·`|`는 둘째 줄 `π`와 같은 `dim`으로 변경하고, 첫 dot와 그룹 사이 dot는 `statusLineSep`를 유지했다. 80열 실제 TUI의 셀 비교에서 사용량과 `π`가 같은 `#767676`, 세 dot가 기존 구분자 색상 `#303030`으로 렌더링됨을 확인했다(해당 실행의 터미널 색상 모드 기준). 좌측 정렬·CO/OC/OR 순서·동일 행 배치는 유지했다.
 - 이 검증에서도 모델 요청은 보내지 않았고 검증 프로세스는 종료했다. 적용에는 omp 재시작이 필요하다.
+
+### 조회 플러그인 3종의 GitHub 설치 전환
+
+- Codex·OpenCode Go·OpenRouter를 각각 `github:pawprint0706/omp-codex-usage`, `github:pawprint0706/omp-opencode-go-usage`, `github:pawprint0706/omp-openrouter-credits`에서 강제 설치했다. 사용자 플러그인 `package.json`의 세 의존성이 이 GitHub 주소이며, 설치 디렉터리가 심볼릭 링크가 아닌 것을 확인했다.
+- 기존 로컬 원본 프로젝트는 변경·삭제하지 않았다. `omp-usage-row`는 이 가이드 저장소로 연결된 로컬 확장을 유지했고, 중복 조회를 막기 위해 조회 원본 3종의 자동 로딩은 비활성 상태를 유지했다.
+- macOS omp 18.11.3의 80열 실제 TUI에서 `π · CO 5h 8% | Wk 1% · OC 5h 0% | Wk 2% | Mo 1% · OR $4.65`를 확인했다(조회 시점 값). 두 줄 배치·Pi 정렬·사용량과 Pi의 동일색·dot 색상 유지도 확인했다. 모델 요청은 보내지 않았고 검증 프로세스는 종료했다.
