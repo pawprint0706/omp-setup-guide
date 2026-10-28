@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -76,10 +77,26 @@ export default async function usageRow(pi: API): Promise<void> {
   };
   // The guide installs these packages in the default user plugin directory.
   // Dynamic import is required because the installation root is the user's home.
-  // Load all factories first: a missing dependency must not start a partial row.
+  // Which of the three providers are installed is the user's choice, and later
+  // install/uninstall requests must keep working: a provider that is absent or
+  // broken is skipped so the remaining groups still render. With all providers
+  // absent the extension still loads and simply renders no usage row.
   const factories = await Promise.all(providers.map(async ([, name, file]) => {
     const entry = join(homedir(), ".omp", "plugins", "node_modules", name, "extensions", file);
-    return (await import(pathToFileURL(entry).href)).default;
+    if (!existsSync(entry)) return null;
+    try {
+      return (await import(pathToFileURL(entry).href)).default;
+    } catch (err) {
+      console.error(`[usage-row] skipping ${name}: load failed`, err);
+      return null;
+    }
   }));
-  for (const factory of factories) await factory(api);
+  for (const [index, factory] of factories.entries()) {
+    if (!factory) continue;
+    try {
+      await factory(api);
+    } catch (err) {
+      console.error(`[usage-row] skipping ${providers[index][1]}: start failed`, err);
+    }
+  }
 }
