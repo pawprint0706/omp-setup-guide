@@ -2,10 +2,10 @@
 
 Windows와 macOS에서 omp를 설치하고 기본 프로필의 설정을 구성·복구하는 가이드다. 해당 OS의 진행 순서부터 시작하고, 공통 설정은 §1–7을 따른다. 특정 환경의 적용 결과·버전별 검토·변경 이력은 [설정 변경·검증 히스토리](omp-setup-history.md)에 별도로 보관한다.
 
-- **구성:** 두 줄 상태줄, 🎯 캐시 아이콘, effort 문자열 표시, 모델 아이콘 제거, 선택한 조회 플러그인과 `omp-usage-row` 레이아웃 확장, 전역 규칙, Eval 프렐류드, 입력 단어 자동완성 off.
+- **구성:** 내장 `titanium` 다크 테마, 두 줄 상태줄, 선택한 조회 플러그인과 `omp-usage-row` 레이아웃 확장, 전역 규칙, Eval 프렐류드, 입력 단어 자동완성 off.
 - 모델·프로바이더·인증은 기존 값을 유지한다. 아래 DeepSeek 모델명과 사용량·잔액은 표시 예시이며 고정 설정값이 아니다.
 
-작성: 2026-10-15, 갱신: 2026-10-29.
+작성: 2026-10-15, 갱신: 2026-11-21.
 
 ## Windows 설치·설정 진행 순서
 
@@ -13,11 +13,10 @@ PowerShell을 사용한다. 기본 프로필의 `~/.omp`는 `$env:USERPROFILE\.o
 
 1. §1-1의 **Windows — PowerShell** 명령으로 설치하고 `omp --version`을 확인한다. 기존 설치본은 먼저 버전부터 확인한다.
 2. §1-2에서 사용할 제공자에 로그인한다. 인증을 이전한다면 **Windows PowerShell용 UTF-8 내보내기** 절차를 사용한다.
-3. §2의 설정 키를 `~/.omp/agent/config.yml`에 병합한다.
-4. §3-1의 **Windows PowerShell** 명령으로 설치 버전에 맞는 테마를 복사하고, §3-2–4의 이름·심볼·테마 선택을 적용한다.
-5. §1-5에서 원하는 조회 플러그인만 설치하고 이 저장소를 `omp-usage-row`로 연결한다. 설치한 조회 플러그인의 자동 로딩은 끈다.
-6. §7의 전역 규칙을 저장한다. 데스크톱·브라우저 제어는 §4에서 설정하고 권한을 확인한다. 다른 OS의 네이티브 애드온을 복사하지 않는다.
-7. omp를 다시 실행하고 §1-7의 설치 후 확인과 §4의 동작 확인을 수행한다. 재설치·백업은 §6을 따른다.
+3. 내장 `titanium` 테마 선택을 포함한 §2의 설정 키를 `~/.omp/agent/config.yml`에 병합한다.
+4. §1-5에서 원하는 조회 플러그인만 설치하고 이 저장소를 `omp-usage-row`로 연결한다. 설치한 조회 플러그인의 자동 로딩은 끈다.
+5. §7의 전역 규칙을 저장한다. 데스크톱·브라우저 제어는 §4에서 설정하고 권한을 확인한다. 다른 OS의 네이티브 애드온을 복사하지 않는다.
+6. omp를 다시 실행하고 §1-7의 설치 후 확인과 §4의 동작 확인을 수행한다. 재설치·백업은 §6을 따른다.
 
 ## macOS 설치·설정 진행 순서
 
@@ -25,11 +24,10 @@ PowerShell을 사용한다. 기본 프로필의 `~/.omp`는 `$env:USERPROFILE\.o
 
 1. §1-1의 **macOS — 터미널의 zsh/bash** 명령으로 설치하고 `omp --version`을 확인한다. 기존 설치본은 먼저 버전부터 확인한다.
 2. §1-2에서 사용할 제공자에 로그인한다. 인증을 이전한다면 **macOS / Git Bash용 내보내기** 절차를 사용한다.
-3. §2의 설정 키를 `~/.omp/agent/config.yml`에 병합한다.
-4. §3-1의 **macOS zsh/bash** 명령으로 설치 버전에 맞는 테마를 복사하고, §3-2–4의 이름·심볼·테마 선택을 적용한다.
-5. §1-5에서 원하는 조회 플러그인만 설치하고 이 저장소를 `omp-usage-row`로 연결한다. 설치한 조회 플러그인의 자동 로딩은 끈다.
-6. §7의 전역 규칙을 저장한다. 데스크톱 제어를 사용한다면 §4에 따라 터미널 앱의 OS 권한을 허용하고 터미널을 다시 실행한다.
-7. omp를 다시 실행하고 §1-7의 설치 후 확인과 §4의 동작 확인을 수행한다. 재설치·백업은 §6을 따른다.
+3. 내장 `titanium` 테마 선택을 포함한 §2의 설정 키를 `~/.omp/agent/config.yml`에 병합한다.
+4. §1-5에서 원하는 조회 플러그인만 설치하고 이 저장소를 `omp-usage-row`로 연결한다. 설치한 조회 플러그인의 자동 로딩은 끈다.
+5. §7의 전역 규칙을 저장한다. 데스크톱 제어를 사용한다면 §4에 따라 터미널 앱의 OS 권한을 허용하고 터미널을 다시 실행한다.
+6. omp를 다시 실행하고 §1-7의 설치 후 확인과 §4의 동작 확인을 수행한다. 재설치·백업은 §6을 따른다.
 
 ## 공통 설정 찾아보기
 
@@ -38,7 +36,7 @@ PowerShell을 사용한다. 기본 프로필의 `~/.omp`는 `$env:USERPROFILE\.o
 | §0 | 목표 상태와 선택한 제공자의 표시 방식 |
 | §1 | 바이너리·인증·플러그인 설치 및 설치 후 확인 |
 | §2 | `config.yml`에 병합할 설정 |
-| §3 | OS별 테마 복사와 공통 오버라이드 |
+| §3 | 내장 테마와 캐시·모델·effort 표기 |
 | §4 | 데스크톱·브라우저 제어 설정과 권한 |
 | §5 | 상태줄 문제 해결 |
 | §6 | 재설치·백업 |
@@ -46,17 +44,17 @@ PowerShell을 사용한다. 기본 프로필의 `~/.omp`는 `$env:USERPROFILE\.o
 
 ## 0. 목표 상태
 
-하단 상태줄은 **두 줄**이다. 첫째 줄은 모델·컨텍스트·🎯 캐시 적중률·지출액까지, 둘째 줄은 같은 `π` 배지 뒤에 **CO → OC → OR를 줄바꿈 없이** ` · `로 이어 표시한다. 사용량 문자열은 둘째 줄 `π`와 같은 `dim` 색상을 사용하며, dot 구분자는 `statusLineSep`를 유지한다. 모델 아이콘 없이 모델명 뒤에 effort 단어가 표시된다. 표시 예시:
+하단 상태줄은 **두 줄**이다. 첫째 줄은 모델·컨텍스트·캐시 적중률·지출액까지, 둘째 줄은 같은 `π` 배지 뒤에 **CO → OC → OR를 줄바꿈 없이** ` · `로 이어 표시한다. 사용량 문자열은 둘째 줄 `π`와 같은 `dim` 색상을 사용하며, dot 구분자는 `statusLineSep`를 유지한다. 기본 `unicode` 심볼 프리셋의 표시 예시:
 
 ```
- π · DeepSeek V4.1 Flash · high · 📁 omp-setup-guide · ◫ 0.9%/1M ⟲ · 🎯 49.17% · $0.00
+ π · ⬢ DeepSeek V4.1 Flash · ◒ high · 📁 omp-setup-guide · ◫ 0.9%/1M ⟲ · 💾 49.17% · $0.00
  π · CO 5h 22% | Wk 19% · OC 5h 2% | Wk 0% | Mo 0% · OR $4.89
 ```
 
 | 조각 | 출처 |
 |---|---|
 | `◫ 0.9%/1M ⟲` | 내장 `context_pct` 세그먼트 |
-| `🎯 49.17%` | 내장 `cache_hit` 세그먼트 + 커스텀 테마의 아이콘 오버라이드 (§3) |
+| `💾 49.17%` | 내장 `cache_hit` 세그먼트 (§3) |
 | `CO 5h 22% \| Wk 19%` | 플러그인 `omp-codex-usage` — Codex 구독 사용률 |
 | `OC 5h 2% \| Wk 0% \| Mo 0%` | 플러그인 `omp-opencode-go-usage` — OpenCode Go 사용률 |
 | `OR $4.89` | 플러그인 `omp-openrouter-credits` |
@@ -131,9 +129,9 @@ omp auth import credentials.json
 
 §2의 키만 병합한다. 이 가이드는 **기본 프로필**의 `~/.omp/agent/config.yml`을 기준으로 한다. 이름 있는 프로필은 `~/.omp/profiles/<profile>/agent/config.yml`을 사용하므로 해당 프로필에 적용하고, 실행·확인도 같은 프로필에서 한다. 나머지 모델·머신별 설정은 기존 값을 유지한다.
 
-### 4) 커스텀 테마 `~/.omp/agent/themes/titanium-custom.json`
+### 4) 내장 `titanium` 다크 테마
 
-🎯 캐시 아이콘·effort 문자열·모델 아이콘 제거용. §3에서 OS에 맞게 내장 테마를 복사하고 **전체 오버라이드 블록**을 병합한다. 이미 맞춰둔 PC가 있으면 완성된 테마 파일을 복사해도 된다.
+§2에서 `theme.dark: titanium`을 선택한다. 별도의 테마 파일을 만들거나 복사하지 않는다.
 
 ### 5) 조회 플러그인 3종 + 사용량 행 확장
 
@@ -187,15 +185,15 @@ omp config get statusLine.preset          # custom
 omp config get statusLine.leftSegments    # [..."context_pct","cache_hit","cost"] — status 없음
 omp config get statusLine.showHookStatus  # true
 omp config get statusLine.compactThinkingLevel # false
-omp config get theme.dark                 # titanium-custom
+omp config get theme.dark                 # titanium
 omp config get spelling.autocomplete      # off
 omp config get computer.enabled           # true
 omp config get browser.enabled            # true
 omp plugin list                           # omp-usage-row 활성, 설치한 조회 원본은 비활성
 
 omp gallery --segment status --plain --width 200      # 훅 상태가 ' · '로 이어진 형태
-omp gallery --segment cache_hit --plain --width 200   # 🎯 77.92%  ← 아이콘 오버라이드 확인
-omp gallery --segment model --plain --width 200       # Sonnet 4.5 · high (⬢ 없음)
+omp gallery --segment cache_hit --plain --width 200   # 기본 unicode: 💾 77.92%
+omp gallery --segment model --plain --width 200       # 기본 unicode: 모델 아이콘과 effort 글리프 확인
 omp                                                   # 실제 TUI 확인 후 §4 Eval 스모크 실행
 ```
 
@@ -203,7 +201,7 @@ omp                                                   # 실제 TUI 확인 후 §
 
 실제 TUI에서 **선택해 설치하고 인증한 제공자의 그룹이 첫째 줄 바로 아래 한 행에 표시되는지** 확인한다. `status` 갤러리는 샘플 훅 문자열만 렌더링하므로 실제 두 줄 배치·인증·API 조회 성공을 증명하지 않는다. 미설치 제공자는 표시되지 않는 것이 정상이다.
 
-`omp ps`는 §4의 `browser.open()` 이후에 확인한다. 첫 사용 전에는 브라우저 데몬이 없어도 정상이다. 🎯는 실제 캐시 읽기가 있을 때만 표시되므로 첫 TUI 화면에 없다고 실패로 판단하지 않는다.
+`omp ps`는 §4의 `browser.open()` 이후에 확인한다. 첫 사용 전에는 브라우저 데몬이 없어도 정상이다. 캐시 적중률은 실제 캐시 읽기가 있을 때만 표시되므로 첫 TUI 화면에 없다고 실패로 판단하지 않는다.
 
 ---
 
@@ -212,9 +210,9 @@ omp                                                   # 실제 TUI 확인 후 §
 아래 키만 넣는다(파일이 없으면 생성, 있으면 해당 키만 병합). `shellPath`, `modelRoles`, `symbolPreset`, `setupVersion` 같은 값은 머신·모델·설치 시점에 따라 달라지므로 여기서 고정하지 않는다 — 셋업 마법사와 `/models`가 채운 값을 그대로 둔다.
 
 ```yaml
-# 1) 커스텀 테마 (§3의 전체 심볼 오버라이드)
+# 1) 내장 다크 테마
 theme:
-  dark: titanium-custom
+  dark: titanium
 
 # 2) 입력창 모양
 composer:
@@ -223,7 +221,7 @@ composer:
 # 3) 상태줄
 statusLine:
   preset: custom
-  # effort 레벨을 모델명 아이콘으로 접지 않고 ` · <레벨>` 문자열로 남긴다 (§3-5)
+  # effort 레벨을 모델명 뒤에 ` · <레벨>`로 표시한다 (§3)
   compactThinkingLevel: false
   leftSegments: [pi, vim, model, mode, collab, stream, path, git, pr, context_pct, cache_hit, cost]
   rightSegments: [session_name]
@@ -246,7 +244,7 @@ computer:
 
 - `preset: custom`은 `segmentOptions`가 **빈 맵에서 시작**한다. 위 블록을 생략하면 경로 축약·깃 플래그·thinking 아이콘이 사라진다.
 - `composer.shape: claude`는 배치를 정한다: `rightSegments`는 입력창 **위** 꼬리줄, `leftSegments`는 **하단 첫째 줄**이다. `omp-usage-row`의 합쳐진 훅 상태가 그 바로 아래 둘째 줄에 붙는다. `status`를 어느 세그먼트 목록에도 넣지 않는다. 기본 컴포저는 `band`.
-- `statusLine.compactThinkingLevel: false`는 effort 레벨을 **모델명 아이콘으로 접지 않고** ` · <레벨>` 문자열로 남긴다. 기본값 `true`에서는 레벨 표시가 모델명 앞 아이콘 하나(`◒ DeepSeek…`)로 접히고 문자열은 사라진다. 레벨 문자열 자체는 심볼 값(`thinking.*`)이라 기호를 떼려면 §3-5의 오버라이드가 함께 필요하다.
+- `statusLine.compactThinkingLevel: false`는 모델 아이콘을 유지하고 모델명 뒤에 ` · <레벨>`을 붙인다. 기본값 `true`에서는 레벨이 모델명 앞의 아이콘 하나(`◒ DeepSeek…`)로 표시되고 뒤의 문자열은 사라진다.
 - `spelling.autocomplete: off`는 **입력창 단어 자동완성(고스트 힌트)만** 끈 값이다. 같은 `interaction → Input` 그룹의 자동완성 항목은 서로 독립이라 따로 지정해야 한다:
 
   | 설정 키 | 설정 UI 라벨 | 가이드 설정 | 끄는 값 |
@@ -262,7 +260,7 @@ computer:
 
 ---
 
-## 3. 커스텀 테마 — 캐시·모델 아이콘과 effort 표기
+## 3. 내장 테마 — 캐시·모델 아이콘과 effort 표기
 
 ### `cache_hit` 세그먼트
 
@@ -277,110 +275,9 @@ computer:
 | `nerd` | `U+F1C0` (Nerd Font 필요) |
 | `ascii` | `cache` |
 
-### 커스텀 테마 만들기 (§3-1–4)
+### 모델과 effort
 
-omp는 세그먼트 아이콘을 **테마의 `symbols.overrides`**로만 덮어쓸 수 있다(설정에는 아이콘 항목이 없다). 커스텀 테마는 `colors` 필수 토큰을 전부 요구하고 테마에 extends/overlay가 없으므로, **내장 테마를 통째로 복사한 뒤 `symbols`만 추가**한다.
-
-**3-1. 설치 버전에 맞는 내장 테마 복사**
-
-`omp --version`이 `omp/18.11.2`이면 태그는 `v18.11.2`다. 다른 버전을 설치했다면 아래 예제의 버전을 실제 출력에 맞춰 바꾼다. 해당 태그의 파일이 없거나 다운로드가 실패하면 임의 버전으로 대체하지 말고 먼저 배포 태그를 확인한다.
-
-Windows PowerShell:
-
-```powershell
-$version = "18.11.2"   # omp --version 출력에 맞춘다
-$themeDir = "$env:USERPROFILE\.omp\agent\themes"
-New-Item -ItemType Directory -Force -Path $themeDir | Out-Null
-curl.exe -fL -o "$themeDir\titanium-custom.json" `
-  "https://raw.githubusercontent.com/can1357/oh-my-pi/v$version/packages/tui/src/theme/defaults/titanium.json"
-if ($LASTEXITCODE -ne 0) { throw "테마 다운로드 실패" }
-```
-
-macOS zsh/bash:
-
-```sh
-version="18.11.2"       # omp --version 출력에 맞춘다
-theme_dir="$HOME/.omp/agent/themes"
-mkdir -p "$theme_dir"
-curl -fL -o "$theme_dir/titanium-custom.json" \
-  "https://raw.githubusercontent.com/can1357/oh-my-pi/v$version/packages/tui/src/theme/defaults/titanium.json"
-```
-
-> 두 다운로드 명령 모두 기존 `titanium-custom.json`을 덮어쓴다. 이미 사용자 변경이 있으면 먼저 백업한다. Windows PowerShell 5.1에서는 네이티브 출력에 `>`를 쓰면 UTF-16LE로 저장될 수 있으므로 테마는 `curl.exe -o`로 저장한다. 아래 편집도 UTF-8로 저장한다.
-
-```diff
-# 3-2. 이름 변경 (파일명과 JSON name을 맞춘다)
--  "name": "titanium",
-+  "name": "titanium-custom",
-```
-
-**3-3. 전체 심볼 오버라이드 병합**
-
-아래 JSON의 `symbols` 속성을 다운로드한 테마의 **최상위 객체에 병합**한다. 테마 파일 전체를 이 블록으로 교체하면 필수 `colors` 등이 사라지므로 안 된다. 기존 `symbols`가 있으면 해당 객체를 갱신하고, 중복 키를 만들지 않는다.
-
-```json
-{
-  "symbols": {
-    "overrides": {
-      "icon.cache": "🎯",
-      "icon.model": "",
-      "thinking.minimal": "minimal",
-      "thinking.low": "low",
-      "thinking.medium": "medium",
-      "thinking.high": "high",
-      "thinking.xhigh": "xhigh",
-      "thinking.max": "max"
-    }
-  }
-}
-```
-
-```yaml
-# 3-4. config.yml에서 이 테마 선택
-theme:
-  dark: titanium-custom
-```
-
-- `symbols.overrides`의 키는 **SymbolKey**(네임스페이스 이름)다. 잘못된 키는 무시되고 debug 로그에만 남는다 → 안 바뀌면 키 철자를 확인한다.
-- 우선순위: 설정 `symbolPreset` > 테마 `symbols.preset` > 기본 `unicode`. `overrides`는 그 위에 적용된다.
-- 검증: `omp gallery --segment cache_hit --plain` → `🎯 77.92%` (기본값 💾가 아니면 오버라이드가 먹은 것).
-- 커스텀 테마가 로드되지 않으면(JSON 오류·필수 토큰 누락) omp는 조용히 `dark`로 폴백한다 → `omp config get theme.dark`와 `~/.omp/logs`를 함께 본다.
-- 복사본은 **스냅샷**이다. omp 업데이트로 내장 테마가 바뀌면 설치 버전에 맞는 파일을 다시 복사한 뒤 이름 변경과 위 전체 `symbols` 블록을 재적용한다.
-- 라이트 터미널에서도 같은 방식으로: `theme.light`용 복사본에 같은 `overrides`를 넣는다.
-
-### 다른 아이콘도 바꾸려면
-
-`overrides`에 키를 추가한다. unicode 프리셋 기준 자주 쓰는 키:
-
-| 키 | 기본 | 키 | 기본 |
-|---|---|---|---|
-| `icon.cache` | 💾 | `icon.cost` | 💲 |
-| `icon.context` | ◫ | `icon.time` | ⏱ |
-| `icon.omp` | π | `icon.auto` | ⟲ |
-| `icon.input` | ⤵ | `icon.output` | ⤴ |
-| `icon.throughput` | ⚡ | `icon.agents` | 👥 |
-| `icon.job` | ⚙ | `icon.host` | 🖥 |
-| `icon.session` | 🆔 | `icon.warning` | ⚠ |
-
-그 외: `icon.cacheMiss`, `icon.subscription`, `icon.advisor(Closed)`, `icon.ghost`, `icon.package`, `icon.rewind`, `icon.intelligence`, `icon.fast`, `icon.mic`, `icon.camera`, `icon.vim*`, `icon.extension*`(Skill/Tool/SlashCommand/Mcp/Rule/Hook/Prompt/ContextFile/Instruction).
-
-- 모델명 앞 아이콘은 `icon.model`(unicode `⬢`, nerd `\uec19`, ascii `[M]`)이다. `""`로 두면 모델 아이콘과 그 공백을 없앤다. 같은 심볼을 쓰는 model-hub(`/models`) 행, agents-hub, 모델 멘션 자동완성, 모델 첨부 칩, `/setup` 테마 미리보기에도 적용된다.
-- `compactThinkingLevel: true`에서는 이 자리가 thinking 글리프로 대체된다 — 그 조합에서는 `icon.model` 값이 상태줄에 쓰이지 않는다.
-
-### effort 레벨을 문자열로 (§3-5)
-
-- 레벨 표시 문자열은 심볼 값이다(키 네임스페이스 `thinking.*`). unicode 프리셋 기본값은 **글리프가 문자열에 붙은 형태**다: `thinking.minimal`=`○ min`, `thinking.low`=`◔ low`, `thinking.medium`=`◑ med`, `thinking.high`=`◒ high`, `thinking.xhigh`=`◕ xhigh`, `thinking.max`=`◉ max`, `thinking.autoPending`=`⟳`(auto 미해결 시 `⟳ auto`). nerd/ascii 프리셋도 같은 구조(`[med]` 등)다.
-- 그래서 "기호 대신 문자열"은 설정 키 하나로는 안 되고 두 조각이 필요하다:
-
-  | 조각 | 값 | 역할 |
-  |---|---|---|
-  | `statusLine.compactThinkingLevel` (§2) | `false` | 레벨 표시를 모델명 아이콘으로 접지 않고 ` · <문자열>` 꼬리로 유지 |
-  | `symbols.overrides` `thinking.*` | `"medium"`, `"high"`, `"xhigh"` … | 문자열에서 글리프를 떼고 단어만 남김 |
-
-- §3-3의 전체 블록은 `minimal`/`low`/`medium`/`high`/`xhigh`/`max`를 모두 단어로 바꾼다. 표시 가능한 effort 목록은 모델에 따라 다르다.
-- **`auto` 미해결 상태의 `⟳`는 유지한다.** omp 18.11.2의 `${theme.thinking.autoPending} auto` 렌더링에서는 심볼을 비워도 고정 공백이 남는다. auto가 레벨로 해결되면 해당 레벨 단어가 표시된다.
-- **`off`의 `⦸`는 유지한다.** `${theme.status.disabled} off`의 공유 심볼을 비우면 다른 화면의 비활성 표식도 사라지고 앞 공백은 남는다.
-- 오버라이드는 테마 전역이므로 상태줄 외의 모델·에이전트 표시에도 영향을 준다. `thinking.autoPending`·`status.disabled`는 변경하지 않는다.
+`compactThinkingLevel: false`에서는 기본 `unicode` 프리셋 기준으로 모델명 앞에 `⬢`, 모델명 뒤에는 ` · ◑ med`나 ` · ◒ high`가 붙는다. 표시 가능한 effort 레벨은 모델에 따라 다르다. 다른 심볼 프리셋을 이미 선택했다면 해당 프리셋의 표기가 유지된다.
 
 ---
 
@@ -483,9 +380,8 @@ omp ps
 | 값이 아예 안 보임 | 통합 확장 비활성·원본 설치 누락·인증 없음·`showHookStatus: false` | `omp plugin list`, 확장 오류 메시지, §2 설정과 `/login <provider>` 확인 |
 | 값이 입력창 위에 나오거나 첫째 줄에도 중복됨 | 세그먼트 목록에 `status`가 남음 | 양쪽 목록에서 `status`를 빼고 §2 적용 |
 | 값 끝에 `?` | 플러그인 갱신 실패. 마지막 확인 값이므로 최신 사용량으로 보장되지 않음 | 로그에서 `codex-usage:`, `opencode-go-usage:`, `openrouter-credits:` 확인 |
-| `🎯`가 안 보임 | 세그먼트 집계의 `cacheRead`가 0이면 숨겨짐 | 요청 횟수가 아니라 실제 캐시 읽기 발생 여부 확인. 두 번째 요청에도 숨겨질 수 있음 |
-| 아이콘이 💾 그대로 | 커스텀 테마 미적용(오타·JSON 오류 → `dark` 폴백) | `omp config get theme.dark`, `omp gallery --segment cache_hit --plain` |
-| 커스텀 테마가 무시됨 | `colors` 필수 토큰 누락 또는 JSON 오류 | §3의 내장 테마 복사부터 다시 |
+| 캐시 적중률이 안 보임 | 세그먼트 집계의 `cacheRead`가 0이면 숨겨짐 | 요청 횟수가 아니라 실제 캐시 읽기 발생 여부 확인. 두 번째 요청에도 숨겨질 수 있음 |
+| 다크 모드에서 `titanium`이 적용되지 않음 | `theme.dark`가 다른 테마를 가리키거나 실행 중인 세션이 이전 설정을 사용함 | 같은 프로필에서 `omp config get theme.dark`를 확인하고 §2 적용 후 재시작 |
 | Codex `CO` 그룹이 안 보임 | Codex OAuth가 없거나 최초 조회 실패, 또는 인증을 사용할 수 없는 상태 | `/login openai-codex`, `codex-usage:` 로그 확인. 로그인 후 다음 90초 갱신·턴 종료 또는 재시작으로 확인 |
 | OpenCode 사용률 앞에 `OC`가 없음 | 접두어 변경 이전 플러그인 코드가 로드됨 | §1-5의 설치 방식별 갱신 후 omp 재시작. `1.0.0` 표시만으로 최신 코드 여부를 판단하지 않음 |
 | CO·OC의 항목 끝에 `!` | 사용 한도 소진 또는 API 제한 판정 | 단순 조회 실패(`?`)와 구분. Codex의 표식은 유료 크레딧으로 계속 사용 가능한지까지 뜻하지 않음 |
@@ -502,26 +398,25 @@ omp ps
 
 ### OS별 준비
 
-- **Windows PowerShell:** §1-1의 Windows 설치 명령 → §1-2의 로그인 또는 UTF-8 인증 이전 → §3-1의 PowerShell 테마 복사.
-- **macOS zsh/bash:** §1-1의 macOS 설치 명령 → §1-2의 로그인 또는 인증 이전 → §3-1의 셸 테마 복사. 데스크톱 제어를 쓸 경우 §4의 OS 권한을 확인하고 필요 시 터미널을 재시작한다.
-- 이미 설치돼 있으면 설치기를 다시 실행하지 말고 `omp --version`부터 확인한다. 테마 버전은 설치 버전과 맞춘다.
+- **Windows PowerShell:** §1-1의 Windows 설치 명령 → §1-2의 로그인 또는 UTF-8 인증 이전.
+- **macOS zsh/bash:** §1-1의 macOS 설치 명령 → §1-2의 로그인 또는 인증 이전. 데스크톱 제어를 쓸 경우 §4의 OS 권한을 확인하고 필요 시 터미널을 재시작한다.
+- 이미 설치돼 있으면 설치기를 다시 실행하지 말고 `omp --version`부터 확인한다.
 
 ### 공통 복구 순서
 
 1. 사용할 프로필을 결정한다. 아래 경로는 기본 프로필 기준이며, 이름 있는 프로필은 §1-3의 경로를 사용한다.
-2. `~/.omp/agent/config.yml`에 §2 키만 병합한다. 기존 모델·인증·머신별 값은 유지한다.
-3. `~/.omp/agent/themes/titanium-custom.json`에 §3의 이름 변경과 **전체 오버라이드**를 적용한다.
-4. `~/.omp/agent/RULES.md`에 §7 내용을 저장한다.
-5. §1-5에서 원하는 조회 플러그인만 설치한다. 가이드 저장소 루트에서 `omp plugin install .`을 실행하고, 설치한 제공자의 `disable` 명령으로 원본 자동 로딩을 끈다. 소스 파일을 따로 복사하지 않는다.
+2. `~/.omp/agent/config.yml`에 내장 `titanium` 선택을 포함한 §2 키만 병합한다. 기존 모델·인증·머신별 값은 유지한다.
+3. `~/.omp/agent/RULES.md`에 §7 내용을 저장한다.
+4. §1-5에서 원하는 조회 플러그인만 설치한다. 가이드 저장소 루트에서 `omp plugin install .`을 실행하고, 설치한 제공자의 `disable` 명령으로 원본 자동 로딩을 끈다. 소스 파일을 따로 복사하지 않는다.
 
-6. 다음 CLI 검증을 실행한다:
+5. 다음 CLI 검증을 실행한다:
 
 ```sh
 omp plugin list                                # omp-usage-row 활성, 설치한 조회 원본은 비활성
 omp config get statusLine.leftSegments
 omp config get statusLine.showHookStatus        # true
 omp config get statusLine.compactThinkingLevel  # false
-omp config get theme.dark                      # titanium-custom
+omp config get theme.dark                      # titanium
 omp config get spelling.autocomplete           # off
 omp config get computer.enabled                # true
 omp config get browser.enabled                 # true
@@ -530,12 +425,12 @@ omp gallery --segment status --plain --width 200
 omp gallery --segment cache_hit --plain --width 200
 ```
 
-7. omp를 다시 실행해 실제 TUI에서 **선택해 설치하고 인증한 제공자의 그룹이 첫째 줄 바로 아래 한 행에 나오는지** 확인한다. 두 `π`는 두 번째 열에 정렬되고 사용량은 둘째 줄 `π`와 같은 색상이어야 한다. dot 구분자들은 윗줄 기본 구분자 색상을 유지한다. 미설치 제공자는 표시되지 않으며 모든 조회 값이 없으면 둘째 줄 전체가 숨겨진다. 둘째 줄보다 창이 좁으면 끝이 잘리므로 폭도 확인한다. 🎯는 캐시 읽기가 없으면 숨겨지므로 갤러리 결과와 구분한다.
-8. §4의 Eval 스모크로 브라우저를 먼저 연다. 관리형 headless Chromium을 사용한 경우 같은 프로젝트의 CLI에서 `omp ps`로 데몬을 추가 확인한다.
+6. omp를 다시 실행해 실제 TUI에서 **선택해 설치하고 인증한 제공자의 그룹이 첫째 줄 바로 아래 한 행에 나오는지** 확인한다. 두 `π`는 두 번째 열에 정렬되고 사용량은 둘째 줄 `π`와 같은 색상이어야 한다. dot 구분자들은 윗줄 기본 구분자 색상을 유지한다. 미설치 제공자는 표시되지 않으며 모든 조회 값이 없으면 둘째 줄 전체가 숨겨진다. 둘째 줄보다 창이 좁으면 끝이 잘리므로 폭도 확인한다. 실제 TUI에서는 캐시 읽기가 없으면 적중률이 숨겨진다.
+7. §4의 Eval 스모크로 브라우저를 먼저 연다. 관리형 headless Chromium을 사용한 경우 같은 프로젝트의 CLI에서 `omp ps`로 데몬을 추가 확인한다.
 
 ### 백업 목적을 구분한다
 
-- **설정만 재현:** `config.yml`, `themes/`, `RULES.md`, `~/.omp/plugins/package.json`과 플러그인 잠금 파일(`omp-plugins.lock.json`), 별도로 안전하게 내보낸 인증을 보관한다. 사용하는 프로필별로 필요한 파일·인증을 챙긴다. 이 목록만으로 이전 대화·사용량 이력까지 복원되지는 않는다.
+- **설정만 재현:** `config.yml`, `RULES.md`, `~/.omp/plugins/package.json`과 플러그인 잠금 파일(`omp-plugins.lock.json`), 별도로 안전하게 내보낸 인증을 보관한다. 사용하는 프로필별로 필요한 파일·인증을 챙긴다. 이 목록만으로 이전 대화·사용량 이력까지 복원되지는 않는다.
 - **로컬 연결 플러그인:** 설치 목록이나 `package.json`만으로는 원본 프로젝트가 복구되지 않는다. `omp plugin list --json`으로 설치 경로를 확인하고, 링크 대상 소스의 저장소·리비전·로컬 변경을 별도로 보존한다. 새 PC에서는 원본을 복원해 다시 연결하거나 위 GitHub 설치 명령을 사용한다. 심볼릭 링크만 백업하고 실제 소스를 빠뜨리지 않는다.
 - **사용량 행 확장:** 이 가이드 저장소의 `package.json`과 `extensions/usage-row.ts`도 함께 보존한다. 문서 하나만 복사해서는 두 줄 레이아웃이 복원되지 않는다. 복구 시 §1-5의 연결·비활성화 절차까지 실행한다.
 - **대화·이력까지 보존:** `sessions/`와 필요한 DB도 백업 대상이다. DB에는 자격증명·설정·사용량 내역이 포함될 수 있으므로 **`*.db`를 모두 폐기 가능한 캐시로 취급하지 않는다.** 로그 보존 여부는 진단 필요와 민감정보 보관 정책에 따라 결정한다.
