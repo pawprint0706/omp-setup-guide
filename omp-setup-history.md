@@ -228,3 +228,17 @@ CO 5h 49% | Wk 8% · OC 5h 0% | Wk 2% | Mo 1% · OR $4.65
 - 갤러리 확인: `status` → `Indexer ready · Tests passing`, `cache_hit` → `💾 77.92%`, `model` → `⬢ Sonnet 4.5 · ◒ high`.
 - Eval 스모크: `computer.capabilities()`는 `backend: win32`, capture/input/ax 모두 `true`, 세 권한 모두 `granted`, `displayCount: 1`; 관리형 headless Chromium에서 `https://example.com`을 열어 제목 `Example Domain`을 확인하고 탭을 닫았다. `omp ps`에서는 `omp.browser.headless`(공유 Chromium)가 탭을 닫은 뒤 종료된 상태로, 사용 중에는 정상 동작했다.
 - 이 저장소의 `extensions/usage-row.ts` 변경은 커밋하지 않은 작업 트리 상태로 두었다. 현재 실행 중인 세션은 상태줄 세그먼트·확장을 시작 시 로드하므로, 화면에 반영하려면 omp를 종료 후 다시 실행한다.
+
+---
+
+## 15. OpenRouter 사용량 추가 (2026-11-27)
+
+- **Windows 10 x64(win32), omp 19.2.1** 기본 프로필에서 OpenRouter API 키를 등록한 뒤(`auth_credentials`: `openrouter` / `api_key`, 2026-11-27) §1-5에 따라 `omp-openrouter-credits@1.0.0`을 GitHub에서 설치했다. `omp plugin disable omp-openrouter-credits`로 원본 자동 로딩만 끄고 통합 확장이 조회하도록 남겼다. `config.yml`, 모델, 기존 인증·승인 정책은 변경하지 않았다.
+- `omp plugin list`에서 조회 원본 3종은 모두 비활성, `omp-usage-row`만 활성이다. `omp plugin doctor`는 **7 ok, 0 warnings, 0 errors**였다.
+- 실제 PTY에서 `omp --no-session --no-title`을 22초 실행해 첫째 줄 바로 아래 한 행에서 세 그룹이 이어지는 것을 확인했다(조회 시점 값, `?` 오류 표식 없음):
+
+```text
+⠀π · CO Wk 2% · OC 5h 0% | Wk 4% | Mo 2% · OR $2.33
+```
+
+- `OR` 값은 `GET https://openrouter.ai/api/v1/credits`의 `total_credits - total_usage`다. 이번에는 `status` 세그먼트를 추가하지 않았고 `showHookStatus: true`·두 줄 레이아웃을 유지했다. 현재 열린 세션에 반영하려면 omp를 종료 후 다시 실행한다.
