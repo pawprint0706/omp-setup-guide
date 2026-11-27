@@ -215,3 +215,16 @@ CO 5h 49% | Wk 8% · OC 5h 0% | Wk 2% | Mo 1% · OR $4.65
 
 - 설치 가이드는 Windows·macOS별 진행 순서, 공통 설정, 설치 후 확인 및 문제 해결에 집중하도록 정리했다.
 - 기존 §8–13과 본문에 섞인 버전별 관찰·검토 결과를 이 문서로 이동했다. 프로그램 코드와 사용자 환경 설정은 변경하지 않았다.
+
+---
+
+## 14. Windows omp 19.2.1 적용 기록 (2026-11-27)
+
+- **Windows 10 x64(win32), omp 19.2.1** 기본 프로필에 §2 설정, 조회 플러그인 2종, `omp-usage-row`, §7 전역 규칙을 적용했다. 기존 `shellPath`, 모델 `opencode-go/deepseek-v4.1-flash:high`, 인증·승인 정책은 유지했다.
+- 이 PC는 OpenRouter를 연동하지 않았으므로 `omp-openrouter-credits`는 설치하지 않았다. §1-5 기준 설치한 `omp-codex-usage`·`omp-opencode-go-usage`만 GitHub 최신으로 맞추고 자동 로딩을 껐으며, 이 저장소를 `omp-usage-row`로 연결했다. `omp plugin doctor`는 6 ok, 0 errors였다.
+- `config.yml`에서 `leftSegments` 끝의 `status`를 제거하고 `showHookStatus: true`로 바꿨다. 나머지 §2 키(`preset: custom`, `compactThinkingLevel: false`, 세그먼트 옵션, `spelling.autocomplete: off`, `computer.enabled: true`, `theme.dark: titanium`, `composer.shape: claude`)는 기존 값이 일치해 유지했다. `~/.omp/agent/RULES.md`는 §7 본문으로 새로 저장했다.
+- **omp 19 테마 API 변경:** `ctx.ui.theme.icon`이 제거되고 `ctx.ui.theme.symbols.icon(name)` / `symbol("icon.omp")`로 옮겨졌다. 18.x 코드의 `theme.icon.omp` 접근은 예외를 던지고, 조회 플러그인이 이를 삼켜 둘째 줄이 통째로 사라졌다. `extensions/usage-row.ts`가 `theme.symbols.icon("omp")`를 우선 쓰고 `theme.icon.omp`로 폴백하도록 고쳤다. 19.2.1에는 내장 `usage` 세그먼트도 있으나, 가이드의 두 줄 플러그인 레이아웃을 그대로 유지했다.
+- 실제 TUI(`omp --no-session --no-title`, 20초)에서 첫째 줄 아래 한 행에 `⠀π · CO Wk 2% · OC 5h 0% | Wk 4% | Mo 2%`가 표시됐다(조회 시점 값, Codex는 주간 전용 플랜이라 `Wk`만). 미설치 OpenRouter 그룹은 표시되지 않았다.
+- 갤러리 확인: `status` → `Indexer ready · Tests passing`, `cache_hit` → `💾 77.92%`, `model` → `⬢ Sonnet 4.5 · ◒ high`.
+- Eval 스모크: `computer.capabilities()`는 `backend: win32`, capture/input/ax 모두 `true`, 세 권한 모두 `granted`, `displayCount: 1`; 관리형 headless Chromium에서 `https://example.com`을 열어 제목 `Example Domain`을 확인하고 탭을 닫았다. `omp ps`에서는 `omp.browser.headless`(공유 Chromium)가 탭을 닫은 뒤 종료된 상태로, 사용 중에는 정상 동작했다.
+- 이 저장소의 `extensions/usage-row.ts` 변경은 커밋하지 않은 작업 트리 상태로 두었다. 현재 실행 중인 세션은 상태줄 세그먼트·확장을 시작 시 로드하므로, 화면에 반영하려면 omp를 종료 후 다시 실행한다.

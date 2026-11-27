@@ -15,7 +15,10 @@ interface Context {
   ui: {
     setStatus(key: string, text: string | undefined): void;
     readonly theme: {
-      icon: { omp: string };
+      // omp <=18 exposed the brand glyph as theme.icon.omp; omp 19 moved
+      // symbols behind theme.symbols (symbol("icon.omp") / icon("omp")).
+      icon?: { omp: string };
+      symbols?: { icon(name: string): string };
       fg(color: "dim" | "statusLineSep", text: string): string;
     };
   };
@@ -49,8 +52,9 @@ export default async function usageRow(pi: API): Promise<void> {
         .filter((text): text is string => Boolean(text))
         .map(text => theme.fg("dim", text))
         .join(theme.fg("statusLineSep", " · "));
-      const badge = theme.icon.omp
-        ? theme.fg("dim", theme.icon.omp) + theme.fg("statusLineSep", " · ")
+      const ompIcon = theme.symbols?.icon?.("omp") ?? theme.icon?.omp ?? "";
+      const badge = ompIcon
+        ? theme.fg("dim", ompIcon) + theme.fg("statusLineSep", " · ")
         : "";
       // Hook sanitization trims ordinary leading spaces. U+2800 is a blank,
       // one-cell glyph that preserves the Claude status bar's left inset.
